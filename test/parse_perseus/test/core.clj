@@ -2,5 +2,5 @@
   (:use [parse_perseus.core] :reload)
   (:use [clojure.test]))
 
-(deftest replace-me ;; FIXME: write
-  (is false "No tests have been written."))
+(deftest odyssey-first-line ;; Test that the first line of the Odyssey encodes correctly...
+  (is (= parse_perseus.core/odyssey_first_line_gk (bc-to-gk parse_perseus.core/odyssey_first_line_bc))))
