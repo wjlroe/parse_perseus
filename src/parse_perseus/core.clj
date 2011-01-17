@@ -14,5 +14,7 @@
 ;; Read on kindle
 ;; Does it work?
 
+
+
 (defn bc-to-gk [bc-text]
   bc-text)
