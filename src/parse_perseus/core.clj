@@ -1,4 +1,5 @@
-(ns parse_perseus.core)
+(ns parse_perseus.core
+  (:use [clojure.contrib.string :only [codepoints]]))
 
 ;; Beta Code = bc = funny combinations of chars
 
@@ -14,7 +15,8 @@
 ;; Read on kindle
 ;; Does it work?
 
-
+(defn unicode-points [text]
+  (codepoints text))
 
 (defn bc-to-gk [bc-text]
   bc-text)
