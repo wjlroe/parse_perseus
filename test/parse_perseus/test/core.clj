@@ -34,3 +34,12 @@
 
 (deftest bc-string-to-gk-test
   (is (= "αβγ" (bc-string-to-gk "abg"))))
+
+;; (deftest bc-string-upper-gk-test
+;;   (is (= "ΑΒΓ" (bc-string-to-gk "*a*b*g"))))
+
+(deftest non-bc-char-test
+  (are [non-bc] (= nil (beta-char-to-greek-char non-bc))
+       \(
+       \)
+       \*))
