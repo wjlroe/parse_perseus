@@ -3,6 +3,12 @@
   (:use clojure.test
 	name.choi.joshua.fnparse))
 
+(defn test-rule [rule string]
+  (rule-match rule
+	      #(println "FAILED: " %)
+	      #(println "LEFTOVER: " %)
+	      (struct state-s string)))
+
 ;(deftest odyssey-first-line ;; Test that the first line of the Odyssey encodes correctly...
 ;  (is (= parse_perseus.core/odyssey_first_line_gk (bc-to-gk parse_perseus.core/odyssey_first_line_bc))))
 
@@ -31,14 +37,13 @@
   (is (= "ἄνδρα μοι ἔννεπε, μοῦσα, πολύτροπον, μάλα πολλὰ"
 	 (parse "a)/ndra moi e)/nnepe, mou=sa, polu/tropon, ma/la polla\\"))))
 
+(deftest word-match
+  (are [bc greek] (= greek (test-rule word bc))
+       "a\\b" "ὰβ"
+       "absg" "αβσγ"))
+
 (deftest diacritic-grave
-  (is (= (char 0x0300) (rule-match diacritic
-				   #(println "FAILED: " %)
-				   #(println "LEFTOVER: " %)
-				   (struct state-s (str \\))))))
+  (is (= (char 0x0300) (test-rule diacritic (str \\)))))
 
 (deftest diacritic-accute
-  (is (= (char 0x0301) (rule-match diacritic
-				   #(println "FAILED: " %)
-				   #(println "LEFTOVER: " %)
-				   (struct state-s "/")))))
+  (is (= (char 0x0301) (test-rule diacritic "/"))))
