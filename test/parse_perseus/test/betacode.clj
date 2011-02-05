@@ -13,29 +13,32 @@
 ;  (is (= parse_perseus.core/odyssey_first_line_gk (bc-to-gk parse_perseus.core/odyssey_first_line_bc))))
 
 (deftest bc-string-to-gk-test
-  (is (= "αβγ" (parse "abg"))))
+  (is (= "αβγ" (parse-bc "abg"))))
 
 (deftest bc-string-upper-gk-test
-  (is (= "ΑΒΓ" (parse "*a*b*g"))))
+  (is (= "ΑΒΓ" (parse-bc "*a*b*g"))))
 
 (deftest bc-string-w-comma
-  (is (= "αβγ, ΑΒΓ" (parse "abg, *a*b*g"))))
+  (is (= "αβγ, ΑΒΓ" (parse-bc "abg, *a*b*g"))))
 
 (deftest bc-string-w-final-sigma
-  (is (= "αβγς" (parse "abgs"))))
+  (is (= "αβγς" (parse-bc "abgs"))))
 
 (deftest bc-string-w-sigma
-  (is (= "αβσγ" (parse "absg"))))
+  (is (= "αβσγ" (parse-bc "absg"))))
 
 (deftest bc-string-w-accute
-  (is (= "ὰβ" (parse "a\\b"))))
+  (is (= "ὰβ" (parse-bc "a\\b"))))
 
 (deftest bc-string-with-breath-a-accute
-  (is (= "ἔρι" (parse "e)/ri"))))
+  (is (= "ἔρι" (parse-bc "e)/ri"))))
 
-(deftest bc-odyssey-1st-line
-  (is (= "ἄνδρα μοι ἔννεπε, μοῦσα, πολύτροπον, μάλα πολλὰ"
-	 (parse "a)/ndra moi e)/nnepe, mou=sa, polu/tropon, ma/la polla\\"))))
+(deftest odyssey-lines
+  (are [bc greek] (= greek (parse-bc bc))
+       "a)/ndra moi e)/nnepe, mou=sa, polu/tropon, ma/la polla\\" "ἄνδρα μοι ἔννεπε, μοῦσα, πολύτροπον, μάλα πολλὰ"
+       "pla/gxqh, e)pei\\ *troi/hs i(ero\\n ptoli/eqron e)/persen" "πλάγχθη, ἐπεὶ Τροίης ἱερὸν πτολίεθρον ἔπερσεν"
+       "a)ll' a)/ge, *faih/kwn bhta/rmones o(/ssoi a)/ristoi," "ἀλλ᾽ ἄγε, Φαιήκων βητάρμονες ὅσσοι ἄριστοι,"
+       "to\\n d' a)pameibo/menos prose/fh polu/mhtis *)odusseu/s:" "τὸν δ᾽ ἀπαμειβόμενος προσέφη πολύμητις Ὀδυσσεύς:"))
 
 (deftest word-match
   (are [bc greek] (= greek (test-rule word bc))
