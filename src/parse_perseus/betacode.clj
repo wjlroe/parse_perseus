@@ -17,7 +17,7 @@
 (defn normalize [text]
   (Normalizer/normalize text java.text.Normalizer$Form/NFC))
 
-;(def apply-str (fn[x] (normalize (apply str x))))
+(def normalize-apply-str (fn[x] (normalize (apply str x))))
 (def apply-str (partial apply str))
 (def diacritic-char (fn[x] (char (diacritics x))))
 
@@ -25,6 +25,9 @@
 (def diacritic
      (semantics (lit-alt-seq (keys diacritics) lit)
 		diacritic-char))
+
+(def diacritic-chars
+     (rep* diacritic))
 
 (def lower-char
      (semantics (lit-alt-seq (map :beta beta-map) lit)
@@ -39,14 +42,20 @@
      (semantics (alt upper-char lower-char)
 		char))
 
+(def char-form
+     (complex [char character
+	       diacritics diacritic-chars]
+	      (normalize-apply-str (str char (apply str diacritics)))))
+
 (def word
-     (rep+ (conc character (rep* diacritic))))
+     (semantics (rep+ char-form)
+		apply-str))
 
 (def beta-string
      (semantics (rep* (alt word anything))
 		apply-str))
 
-(defn parse [tokens]
+(defn parse-bc [tokens]
   (rule-match beta-string
 	      #(println "FAILED: " %)
 	      #(println "LEFTOVER: " %2)
