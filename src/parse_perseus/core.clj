@@ -38,7 +38,7 @@
        {:beta \x :greek 0x03c7}
        {:beta \y :greek 0x03c8}
        {:beta \w :greek 0x03c9}
-       {:beta \' :greek 0x1fbd}})
+       {:beta \' :greek 0x0313}})
 
 ;; Texts in ~/source/perseus/texts/ ...
 
