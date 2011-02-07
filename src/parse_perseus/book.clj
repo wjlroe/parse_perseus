@@ -121,6 +121,8 @@
 (defn write-book-cover-page [to-file book]
   (write-file to-file (cover-page book)))
 
+;; TODO: Command line arguments - title, xml source, cover image
+;; TODO: How to build the ZIP file (with mimetype file first)
 (defn -main []
   )
 
