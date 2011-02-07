@@ -40,6 +40,11 @@
        "a)ll' a)/ge, *faih/kwn bhta/rmones o(/ssoi a)/ristoi," "ἀλλ᾽ ἄγε, Φαιήκων βητάρμονες ὅσσοι ἄριστοι,"
        "to\\n d' a)pameibo/menos prose/fh polu/mhtis *)odusseu/s:" "τὸν δ᾽ ἀπαμειβόμενος προσέφη πολύμητις Ὀδυσσεύς:"))
 
+(deftest upper-char-test
+  (are [bc greek] (= greek (test-rule upper-char bc))
+       "*o" "Ο"
+       "*)o" (str (char 0x1f48))))
+
 (deftest word-match
   (are [bc greek] (= greek (test-rule word bc))
        "a\\b" "ὰβ"

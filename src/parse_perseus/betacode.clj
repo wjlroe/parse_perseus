@@ -29,18 +29,21 @@
 (def diacritic-chars
      (rep* diacritic))
 
-(def lower-char
+(def basic-char
      (semantics (lit-alt-seq (map :beta beta-map) lit)
 		beta-char-to-greek-char))
 
+(def lower-char
+     (complex [basic basic-char]
+	      (char basic)))
+
 (def upper-char
      (complex [_ star
-	       character lower-char]
-	      (- character 32)))
+	       diacritics diacritic-chars
+	       character basic-char]
+	      (str (char (- character 32)) (apply str diacritics))))
 
-(def character
-     (semantics (alt upper-char lower-char)
-		char))
+(def character (alt upper-char lower-char))
 
 (def char-form
      (complex [char character
