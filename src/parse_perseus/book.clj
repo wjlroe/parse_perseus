@@ -2,9 +2,10 @@
   (:use parse_perseus.betacode
 	clojure.xml
 	clojure.pprint
-	[clojure.contrib.duck-streams :only [write-lines]]
+	[clojure.contrib.duck-streams :only [write-lines copy]]
 	clojure.contrib.prxml)
-  (:import [java.io File BufferedWriter FileWriter]))
+  (:import [java.io File BufferedWriter FileWriter FileOutputStream]
+	   [java.util.zip ZipOutputStream ZipEntry]))
 
 (defstruct book
   :title
@@ -120,6 +121,14 @@
 
 (defn write-book-cover-page [to-file book]
   (write-file to-file (cover-page book)))
+
+(defn create-epub [book]
+  (with-open [out (-> (File. (:epub-filename book))
+		      (FileOutputStream.) (ZipOutputStream.))]
+    (for [file ["mimetype"]]
+      (do
+	(.putNextEntry out (ZipEntry. file))
+	(copy (File. file) out)))))
 
 ;; TODO: Command line arguments - title, xml source, cover image
 ;; TODO: How to build the ZIP file (with mimetype file first)
