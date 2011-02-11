@@ -12,7 +12,8 @@
       \= 0x0342
       \) 0x0313
       \( 0x0314
-      \| 0x0345})
+      \| 0x0345
+      \+ 0x00a8})
 
 (defn normalize [text]
   (Normalizer/normalize text java.text.Normalizer$Form/NFC))

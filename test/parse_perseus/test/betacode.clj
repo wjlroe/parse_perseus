@@ -38,17 +38,19 @@
        "a)/ndra moi e)/nnepe, mou=sa, polu/tropon, ma/la polla\\" "ἄνδρα μοι ἔννεπε, μοῦσα, πολύτροπον, μάλα πολλὰ"
        "pla/gxqh, e)pei\\ *troi/hs i(ero\\n ptoli/eqron e)/persen" "πλάγχθη, ἐπεὶ Τροίης ἱερὸν πτολίεθρον ἔπερσεν"
        "a)ll' a)/ge, *faih/kwn bhta/rmones o(/ssoi a)/ristoi," "ἀλλ᾽ ἄγε, Φαιήκων βητάρμονες ὅσσοι ἄριστοι,"
-       "to\\n d' a)pameibo/menos prose/fh polu/mhtis *)odusseu/s:" "τὸν δ᾽ ἀπαμειβόμενος προσέφη πολύμητις Ὀδυσσεύς:"))
+       "to\\n d' a)pameibo/menos prose/fh polu/mhtis *)odusseu/s:" "τὸν δ᾽ ἀπαμειβόμενος προσέφη πολύμητις Ὀδυσσεύς:"
+       "w(s kai\\ nu=n *ai)/gisqos u(pe\\r mo/ron *)atrei/+dao" "ὡς καὶ νῦν Αἴγισθος ὑπὲρ μόρον Ἀτρεΐδαο"a))
 
 (deftest upper-char-test
   (are [bc greek] (= greek (test-rule upper-char bc))
-       "*o" "Ο"
-       "*)o" (str (char 0x1f48))))
+       "*o" "Ο"))
 
 (deftest word-match
   (are [bc greek] (= greek (test-rule word bc))
        "a\\b" "ὰβ"
-       "absg" "αβσγ"))
+       "absg" "αβσγ"
+       "i/+" "ΐ"
+       "*)o" "Ὀ"))
 
 (deftest diacritic-grave
   (is (= (char 0x0300) (test-rule diacritic (str \\)))))
