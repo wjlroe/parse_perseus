@@ -6,6 +6,9 @@
 
 (defstruct state-s :remainder)
 
+
+;; Need to combine some more specifically rather than relying on normalisation...
+;; BUT this won't work with the lit-alt-seq because it assumes char literals as keys
 (def diacritics
      {\\ 0x0300
       \/ 0x0301
@@ -13,7 +16,7 @@
       \) 0x0313
       \( 0x0314
       \| 0x0345
-      \+ 0x00a8})
+      \+ 0x0308})
 
 (defn normalize [text]
   (Normalizer/normalize text java.text.Normalizer$Form/NFC))

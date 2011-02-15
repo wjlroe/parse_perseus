@@ -40,14 +40,6 @@
        {:beta \w :greek 0x03c9}
        {:beta \' :greek 0x0313}})
 
-;; Texts in ~/source/perseus/texts/ ...
-
-;;; TODO ;;;
-;; Put the greek above in an epub book...
-;; Convert to mobi
-;; Read on kindle
-;; Does it work?
-
 (defn int-to-hex [number]
   (Integer/toHexString (bit-and number 0xffff)))
 

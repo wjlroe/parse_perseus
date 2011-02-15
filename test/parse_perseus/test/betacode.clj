@@ -50,6 +50,7 @@
        "a\\b" "ὰβ"
        "absg" "αβσγ"
        "i/+" "ΐ"
+       "i+" "ϊ"
        "*)o" "Ὀ"))
 
 (deftest diacritic-grave
