@@ -28,7 +28,9 @@
 	       (:content x))))))
 
 (defn bc-file-to-gk [filename]
-  (map parse-bc (remove nil? (bc-content-from-file filename))))
+  (try
+   (map parse-bc (remove nil? (bc-content-from-file filename)))
+   (catch FileNotFoundException e (println "File with filename " filename " not found"))))
 
 (defn book-content [book]
   (with-out-str
@@ -169,13 +171,14 @@
 ;; TODO: Command line arguments - title, xml source, cover image
 ;; TODO: How to build the ZIP file (with mimetype file first)
 (defn -main []
-  (let [book (struct-map book
+  (let [home (System/getProperty "user.home")
+	book (struct-map book
 	       :title "Ὀδύσσεια"
 	       :identifier "odyssey_gk"
 	       :ident-url "http://en.wikipedia.org/wiki/The_Odyssey"
 	       :author "Homer"
-	       :cover-image "/Users/will/Dropbox/perseus/odyssey.jpg"
-	       :book-xml "/Users/will/Desktop/texts/Classics/Homer/opensource/hom.od_gk.xml"
+	       :cover-image (str home "/Dropbox/perseus/odyssey.jpg")
+	       :book-xml (str home "/Desktop/texts/Classics/Homer/opensource/hom.od_gk.xml")
 	       :epub-dir "/tmp/epub-book"
 	       :epub-filename "/tmp/book.epub")]
     (do
