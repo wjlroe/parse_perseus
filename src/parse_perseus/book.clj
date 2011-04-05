@@ -6,7 +6,7 @@
 	[clojure.contrib.duck-streams :only [write-lines copy reader writer]]
 	[clojure.contrib.io :only [delete-file-recursively]]
 	clojure.contrib.prxml)
-  (:import [java.io File BufferedWriter FileReader FileWriter FileOutputStream]
+  (:import [java.io File BufferedWriter FileReader FileWriter FileOutputStream FileNotFoundException]
 	   [java.util.zip ZipOutputStream ZipEntry]))
 
 (defstruct book
@@ -28,9 +28,7 @@
 	       (:content x))))))
 
 (defn bc-file-to-gk [filename]
-  (try
-   (map parse-bc (remove nil? (bc-content-from-file filename)))
-   (catch FileNotFoundException e (println "File with filename " filename " not found"))))
+  (map parse-bc (remove nil? (bc-content-from-file filename))))
 
 (defn book-content [book]
   (with-out-str
@@ -148,17 +146,25 @@
    (file (str (:epub-dir book) "/OPS/cover.jpg"))))
 
 (defn create-epub [book]
-  (with-open [out (-> (file (:epub-filename book))
-		      (FileOutputStream.)
-		      (ZipOutputStream.))]
-    (dorun
-      (for [thisfile (concat (keys epub-files) ["OPS/cover.jpg"])
-	    :let [filename (str (:epub-dir book) "/" thisfile)]]
-	(do
-	  (println "About to put a file into zip :" filename)
-	  (.putNextEntry out (ZipEntry. thisfile))
-	  (println "Have put file: " filename)
-	  (copy (file filename) out))))))
+  (try
+    (with-open [out (-> (file (:epub-filename book))
+                      (FileOutputStream.)
+                      (ZipOutputStream.))]
+      (dorun
+        (for [thisfile (concat (keys epub-files) ["OPS/cover.jpg"])
+              :let [filename (str (:epub-dir book) "/" thisfile)]]
+          (do
+            (println "About to put a file into zip :" filename)
+            (.putNextEntry out (ZipEntry. thisfile))
+            (println "Have put file: " filename)
+            (copy (file filename) out)))))
+    (catch FileNotFoundException e 
+      (do
+        (println "File not found: " (.getMessage e))
+        (akshdsd)))
+    (finally 
+      (println "Done."))))
+
 
 (defn write-all-files [book]
   (doall
