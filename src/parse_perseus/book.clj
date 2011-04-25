@@ -17,20 +17,32 @@
   :cover-image
   :epub-filename
   :epub-dir
-  :book-xml)
+  :book-xml
+  :chapter-files)
 
-(defn bc-content-from-file [filename]
-  (for [x (xml-seq (parse (file filename)))
+(defstruct chapter
+  :playorder
+  :elem-id
+  :filename)
+
+(defn write-file [to-file data]
+  (do
+    (make-parents to-file)
+    (with-open [wtr (BufferedWriter. (FileWriter. to-file))]
+      (.write wtr data))))
+
+;; (defn write-book-content [from-file to-file book]
+;;   (write-file to-file (book-content from-file book)))
+
+(defn content-file [book-node]
+  (for [x (:content book-node)
 	:when (= :l (:tag x))]
     (let [content (:content x)]
       (if (= :milestone (:tag (first content)))
 	(cons [:raw! "</p>\n<p>"] (parse-bc (second content)))
 	(parse-bc (first content))))))
 
-;; (defn bc-file-to-gk [filename]
-;;   (map parse-bc (remove nil? (bc-content-from-file filename))))
-
-(defn book-content [book]
+(defn book-content [book lines chapter]
   (with-out-str
     (prxml [:decl! {:version "1.0"}]
 	   [:doctype! "html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""]
@@ -44,8 +56,26 @@
 		     :href "style.css"
 		     :type "text/css"}]]
 	    [:body
+	     [:h1 (str "Book " (:playorder chapter))]
 	     [:p
-	      (for [line (bc-content-from-file (:book-xml book))] (cons line (cons [:br] "\n")))]]])))
+	      ;(for [line (bc-content-from-file (:book-xml book))] (cons line (cons [:br] "\n")))]]])))
+	      (for [line lines] (cons line (cons [:br] "\n")))]]])))
+
+(defn bc-content-from-file [book]
+  (let [files
+	(for [node (xml-seq (parse (file (:book-xml book))))
+	      :when (and (= :div1 (:tag node)) (= "Book" (:type (:attrs node))))]
+	  (let [playorder (:n (:attrs node))
+		elem-id (str "book-" playorder)
+		chapter (struct-map chapter
+			  :playorder playorder
+			  :elem-id elem-id
+			  :filename (str elem-id ".xhtml"))]
+	    (do
+	      (write-file (str (book :epub-dir) "/OPS/" (:filename chapter))
+			  (book-content book (content-file node) chapter))
+	      chapter)))]
+    (assoc book :chapter-files files)))
 
 (defn book-opf [book]
   (with-out-str
@@ -63,18 +93,26 @@
 	     [:dc:creator {:opf:file-as (:author book) :opf:role "aut"} (:author book)]
 	     [:meta {:name "cover" :content "cover-image"}]]
 	    [:manifest
-	     [:item {:id "book-content"
-		     :href "book-content.xhtml"
-		     :media-type "application/xhtml+xml"}]
+	     (for [chapter (:chapter-files book)]
+	       [:item {:id (:elem-id chapter) :href (:filename chapter) :media-type "application/xhtml+xml"}])
+	     ;; [:item {:id "book-content"
+	     ;; 	     :href "book-content.xhtml"
+	     ;; 	     :media-type "application/xhtml+xml"}]
 	     [:item {:id "stylesheet" :href "style.css" :media-type "text/css"}]
 	     [:item {:id "ncx" :href "book.ncx" :media-type "application/x-dtbncx+xml"}]
 	     [:item {:id "cover" :href "cover.html" :media-type "application/xhtml+xml"}]
+	     [:item {:id "toc" :href "toc.html" :media-type "application/xhtml+xml"}]
 	     [:item {:id "cover-image" :href "cover.jpg" :media-type "image/jpeg"}]]
 	    [:spine {:toc "ncx"}
 	     [:itemref {:idref "cover" :linear "no"}]
-	     [:itemref {:idref "book-content"}]]
+	     [:itemref {:idref "toc" :linear "no"}]
+	     (for [chapter (:chapter-files book)]
+	       [:itemref {:idref (:elem-id chapter)}])]
 	    [:guide
-	     [:reference {:href "cover.html" :type "cover" :title "Cover"}]]])))
+	     [:reference {:href "cover.html" :type "cover" :title "Cover"}]
+	     [:reference {:href "toc.html" :type "toc" :title "Table of Contents"}]
+	     (let [chapter (first (:chapter-files book))]
+	       [:reference {:href (:filename chapter) :type "text" :title "Text"}])]])))
 
 (defn cover-page [book]
   (with-out-str
@@ -86,6 +124,21 @@
 	    [:body
 	     [:div {:id "cover-image"}
 	      [:img {:src "cover.jpg" :alt "Cover image"}]]]])))
+
+(defn table-of-contents [book]
+  (with-out-str
+    (prxml [:doctype! "html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""]
+	   [:html {:xmlns "http://www.w3.org/1999/xhtml"}
+	    [:head
+	     [:title "Table of Contents"]
+	     [:style {:type "text/css"} "img { max-width: 100%; height: 100% }"]]
+	    [:body
+	     [:div {:id "contents"}
+	      [:h2 "Contents"]
+	      [:ul
+	       (for [chapter (:chapter-files book)]
+		 [:li
+		  [:a {:href (:filename chapter)} (str "Book " (:playorder chapter))]])]]]])))
 
 (defn book-ncx [book]
   (with-out-str
@@ -101,9 +154,17 @@
 	    [:docTitle
 	     [:text (:title book)]]
 	    [:navMap
-	     [:navPoint {:class "chapter" :id "book-content" :playOrder "1"}
-	      [:navLabel [:text "Chapter 1"]]
-	      [:content {:src "book-content.xhtml"}]]]])))
+	     [:navPoint {:id "toc" :playOrder "0"}
+	      [:navLabel [:text "Table of Contents"]]
+	      [:content {:src "toc.html"}]]
+	     (for [chapter (:chapter-files book)]
+	       [:navPoint {:class "chapter" :id (:elem-id chapter) :playOrder (:playorder chapter)}
+		[:navLabel [:text (str "Book " (:playorder chapter))]]
+		[:content {:src (:filename chapter)}]])]])))
+
+	     ;; [:navPoint {:class "chapter" :id "book-content" :playOrder "1"}
+	     ;;  [:navLabel [:text "Chapter 1"]]
+	     ;;  [:content {:src "book-content.xhtml"}]]]])))
 
 (defn container [book]
   (with-out-str
@@ -113,27 +174,25 @@
 	     [:rootfile {:full-path "OPS/book.opf" :media-type "application/oebps-package+xml"}]]])))
 
 (defn mimetype [book]
-  "application/epub+zip")
+  "application/epub+zip
+")
 (defn stylesheet [book]
-  "")
+  "p
+{
+   text-indent:            0em;
+   margin-top:             0.5em;
+   margin-bottom:          0.5em;
+}")
 
 (def epub-files
      {"mimetype" mimetype
       "OPS/book.opf" book-opf
-      "OPS/book-content.xhtml" book-content
+  ;    "OPS/book-content.xhtml" book-content
       "OPS/book.ncx" book-ncx
       "OPS/style.css" stylesheet
       "OPS/cover.html" cover-page
+      "OPS/toc.html" table-of-contents
       "META-INF/container.xml" container})
-
-(defn write-file [to-file data]
-  (do
-    (make-parents to-file)
-    (with-open [wtr (BufferedWriter. (FileWriter. to-file))]
-      (.write wtr data))))
-
-(defn write-book-content [from-file to-file book]
-  (write-file to-file (book-content from-file book)))
 
 (defn write-book-opf [to-file book]
   (write-file to-file (book-opf book)))
@@ -151,13 +210,16 @@
                     (FileOutputStream.)
                     (ZipOutputStream.))]
     (dorun
-      (for [thisfile (concat (keys epub-files) ["OPS/cover.jpg"])
+      (for [thisfile (concat (keys epub-files) ["OPS/cover.jpg"] (map #(str "OPS/" (:filename %)) (:chapter-files book)))
             :let [filename (str (:epub-dir book) "/" thisfile)]]
-        (do
-          (println "About to put a file into zip :" filename)
-          (.putNextEntry out (ZipEntry. thisfile))
-          (println "Have put file: " filename)
-          (copy (file filename) out))))))
+	(let [entry (ZipEntry. thisfile)]
+	  (do
+	    (if (= "metadata" thisfile)
+	      (.setMethod entry ZipEntry/STORED))
+	    (println "About to put a file into zip :" filename)
+	    (.putNextEntry out (ZipEntry. thisfile))
+	    (println "Have put file: " filename)
+	    (copy (file filename) out)))))))
 
 (defn write-all-files [book]
   (doall
@@ -182,9 +244,12 @@
                            :epub-filename "/tmp/book.epub")]
       (do
         (delete-file-recursively (:epub-dir book) true)
-        (write-all-files book)
-        (copy-cover-image book)
-        (create-epub book)))
+	(let [new-book (bc-content-from-file book)]
+	  (do
+	    (pprint new-book)
+	    (write-all-files new-book)
+	    (copy-cover-image new-book)
+	    (create-epub new-book)))))
     (catch FileNotFoundException e
       (do
         (println "File not found: " (.getMessage e))))
