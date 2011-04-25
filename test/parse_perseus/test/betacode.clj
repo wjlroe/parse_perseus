@@ -39,7 +39,11 @@
        "pla/gxqh, e)pei\\ *troi/hs i(ero\\n ptoli/eqron e)/persen" "πλάγχθη, ἐπεὶ Τροίης ἱερὸν πτολίεθρον ἔπερσεν"
        "a)ll' a)/ge, *faih/kwn bhta/rmones o(/ssoi a)/ristoi," "ἀλλ᾽ ἄγε, Φαιήκων βητάρμονες ὅσσοι ἄριστοι,"
        "to\\n d' a)pameibo/menos prose/fh polu/mhtis *)odusseu/s:" "τὸν δ᾽ ἀπαμειβόμενος προσέφη πολύμητις Ὀδυσσεύς:"
-       "w(s kai\\ nu=n *ai)/gisqos u(pe\\r mo/ron *)atrei/+dao" "ὡς καὶ νῦν Αἴγισθος ὑπὲρ μόρον Ἀτρεΐδαο"a))
+       "w(s kai\\ nu=n *ai)/gisqos u(pe\\r mo/ron *)atrei/+dao" "ὡς καὶ νῦν Αἴγισθος ὑπὲρ μόρον Ἀτρεΐδαο"))
+
+(deftest real-apostrophe
+  (are [bc greek] (= greek (test-rule word bc))
+       "'" "᾽"))
 
 (deftest upper-char-test
   (are [bc greek] (= greek (test-rule upper-char bc))
@@ -51,10 +55,14 @@
        "absg" "αβσγ"
        "i/+" "ΐ"
        "i+" "ϊ"
-       "*)o" "Ὀ"))
+       "*)o" "Ὀ"
+       "s" (str (char 0x03c2))))
 
 (deftest diacritic-grave
   (is (= (char 0x0300) (test-rule diacritic (str \\)))))
 
 (deftest diacritic-accute
   (is (= (char 0x0301) (test-rule diacritic "/"))))
+
+(deftest test-final-sigma
+  (is (= (str (char 0x03c2) \space) (test-rule final-sigma "s "))))

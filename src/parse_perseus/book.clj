@@ -23,12 +23,12 @@
   (for [x (xml-seq (parse (file filename)))
 	:when (= :l (:tag x))]
     (let [content (:content x)]
-      (first (if (= :milestone (:tag (first content)))
-	       (:content (first content))
-	       (:content x))))))
+      (if (= :milestone (:tag (first content)))
+	(cons [:raw! "</p>\n<p>"] (parse-bc (second content)))
+	(parse-bc (first content))))))
 
-(defn bc-file-to-gk [filename]
-  (map parse-bc (remove nil? (bc-content-from-file filename))))
+;; (defn bc-file-to-gk [filename]
+;;   (map parse-bc (remove nil? (bc-content-from-file filename))))
 
 (defn book-content [book]
   (with-out-str
@@ -44,7 +44,8 @@
 		     :href "style.css"
 		     :type "text/css"}]]
 	    [:body
-	     (for [line (bc-file-to-gk (:book-xml book))] (cons line (cons [:br] "\n")))]])))
+	     [:p
+	      (for [line (bc-content-from-file (:book-xml book))] (cons line (cons [:br] "\n")))]]])))
 
 (defn book-opf [book]
   (with-out-str
@@ -146,25 +147,17 @@
    (file (str (:epub-dir book) "/OPS/cover.jpg"))))
 
 (defn create-epub [book]
-  (try
-    (with-open [out (-> (file (:epub-filename book))
-                      (FileOutputStream.)
-                      (ZipOutputStream.))]
-      (dorun
-        (for [thisfile (concat (keys epub-files) ["OPS/cover.jpg"])
-              :let [filename (str (:epub-dir book) "/" thisfile)]]
-          (do
-            (println "About to put a file into zip :" filename)
-            (.putNextEntry out (ZipEntry. thisfile))
-            (println "Have put file: " filename)
-            (copy (file filename) out)))))
-    (catch FileNotFoundException e 
-      (do
-        (println "File not found: " (.getMessage e))
-        (akshdsd)))
-    (finally 
-      (println "Done."))))
-
+  (with-open [out (-> (file (:epub-filename book))
+                    (FileOutputStream.)
+                    (ZipOutputStream.))]
+    (dorun
+      (for [thisfile (concat (keys epub-files) ["OPS/cover.jpg"])
+            :let [filename (str (:epub-dir book) "/" thisfile)]]
+        (do
+          (println "About to put a file into zip :" filename)
+          (.putNextEntry out (ZipEntry. thisfile))
+          (println "Have put file: " filename)
+          (copy (file filename) out))))))
 
 (defn write-all-files [book]
   (doall
@@ -175,22 +168,28 @@
        (write-file (str (book :epub-dir) "/" thefilename) (contents-fun book))))))
 
 ;; TODO: Command line arguments - title, xml source, cover image
-;; TODO: How to build the ZIP file (with mimetype file first)
 (defn -main []
-  (let [home (System/getProperty "user.home")
-	book (struct-map book
-	       :title "Ὀδύσσεια"
-	       :identifier "odyssey_gk"
-	       :ident-url "http://en.wikipedia.org/wiki/The_Odyssey"
-	       :author "Homer"
-	       :cover-image (str home "/Dropbox/perseus/odyssey.jpg")
-	       :book-xml (str home "/Desktop/texts/Classics/Homer/opensource/hom.od_gk.xml")
-	       :epub-dir "/tmp/epub-book"
-	       :epub-filename "/tmp/book.epub")]
-    (do
-      (delete-file-recursively (:epub-dir book) true)
-      (write-all-files book)
-      (copy-cover-image book)
-      (create-epub book))))
+  (try
+    (let [home (System/getProperty "user.home")
+          book (struct-map book
+                           :title "Ὀδύσσεια"
+                           :identifier "odyssey_gk"
+                           :ident-url "http://en.wikipedia.org/wiki/The_Odyssey"
+                           :author "Homer"
+                           :cover-image (str home "/Dropbox/perseus/odyssey.jpg")
+                           :book-xml (str home "/Desktop/texts/Classics/Homer/opensource/hom.od_gk.xml")
+                           :epub-dir "/tmp/epub-book"
+                           :epub-filename "/tmp/book.epub")]
+      (do
+        (delete-file-recursively (:epub-dir book) true)
+        (write-all-files book)
+        (copy-cover-image book)
+        (create-epub book)))
+    (catch FileNotFoundException e
+      (do
+        (println "File not found: " (.getMessage e))))
+    (finally
+      (println "Done."))))
+
 
 

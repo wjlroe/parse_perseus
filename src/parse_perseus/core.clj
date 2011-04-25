@@ -38,7 +38,8 @@
        {:beta \x :greek 0x03c7}
        {:beta \y :greek 0x03c8}
        {:beta \w :greek 0x03c9}
-       {:beta \' :greek 0x0313}})
+       {:beta \' :greek 0x1fbd}})
+;       {:beta \' :greek 0x0313}})
 
 (defn int-to-hex [number]
   (Integer/toHexString (bit-and number 0xffff)))
