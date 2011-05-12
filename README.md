@@ -4,7 +4,7 @@ Perseus is a digital library of Ancient Greek and Roman texts. This project is f
 
 ## Usage
 
-The paths to the Perseus XML files is hardcoded in [parse_perseus.book](src/parse_perseus/book.clj).
+The paths to the Perseus XML files is hardcoded in [parse_perseus.book](https://github.com/wjlroe/parse_perseus/blob/master/src/parse_perseus/book.clj).
 
 - To run the parser and produce an epub book, run: `lein run` which will run the default command in project.clj
 - To run the tests, run the following: `lein tests`
