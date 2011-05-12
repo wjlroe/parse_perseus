@@ -2,6 +2,8 @@
 
 Perseus is a digital library of Ancient Greek and Roman texts. This project is for converting the XML files, freely available from their website, into Unicode ebooks for e-readers such as the Amazon Kindle.
 
+See [Parsing and ebook making](http://wjlroe.github.com/2011/04/25/parsing-and-ebook-making.html) which is a blog entry I wrote about this project.
+
 ## Usage
 
 The paths to the Perseus XML files is hardcoded in [parse_perseus.book](https://github.com/wjlroe/parse_perseus/blob/master/src/parse_perseus/book.clj).
