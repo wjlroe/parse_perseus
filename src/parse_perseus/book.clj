@@ -187,7 +187,6 @@
 (def epub-files
      {"mimetype" mimetype
       "OPS/book.opf" book-opf
-  ;    "OPS/book-content.xhtml" book-content
       "OPS/book.ncx" book-ncx
       "OPS/style.css" stylesheet
       "OPS/cover.html" cover-page
@@ -207,8 +206,8 @@
 
 (defn create-epub [book]
   (with-open [out (-> (file (:epub-filename book))
-                    (FileOutputStream.)
-                    (ZipOutputStream.))]
+		      (FileOutputStream.)
+		      (ZipOutputStream.))]
     (dorun
       (for [thisfile (concat (keys epub-files) ["OPS/cover.jpg"] (map #(str "OPS/" (:filename %)) (:chapter-files book)))
             :let [filename (str (:epub-dir book) "/" thisfile)]]
