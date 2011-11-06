@@ -56,8 +56,14 @@
 	       character basic-char]
 	      (str (char (- character 32)) (apply str diacritics))))
 
-(def final-sigma (constant-semantics (lit-conc-seq "s " lit)
-				     (str (char (- (beta-char-to-greek-char \s) 1)) \space)))
+(def verse-final-sigma (constant-semantics (lit-conc-seq "s:" lit)
+				     (str (char (- (beta-char-to-greek-char \s) 1)) \:)))
+
+(def word-final-sigma (constant-semantics (lit-conc-seq "s " lit)
+                                          (str (char (- (beta-char-to-greek-char \s) 1)) \space)))
+
+(def final-sigma
+  (alt verse-final-sigma word-final-sigma))
 
 (def character (alt iota-dialytika-tonos final-sigma upper-char lower-char))
 
