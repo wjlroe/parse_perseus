@@ -62,10 +62,13 @@
 (def word-final-sigma (constant-semantics (lit-conc-seq "s " lit)
                                           (str (char (- (beta-char-to-greek-char \s) 1)) \space)))
 
+;; (def final-sigma
+;;   (alt verse-final-sigma word-final-sigma))
 (def final-sigma
-  (alt verse-final-sigma word-final-sigma))
+  (constant-semantics (lit \s)
+             (str (char (- (beta-char-to-greek-char \s) 1)))))
 
-(def character (alt iota-dialytika-tonos final-sigma upper-char lower-char))
+(def character (alt iota-dialytika-tonos upper-char lower-char))
 
 (def char-form
      (complex [char character
@@ -76,8 +79,20 @@
 ;;      (semantics (lit \s)
 ;; 		(fn[x] (str (char (- (beta-char-to-greek-char x) 1))))))
 
+(def any-word
+  (semantics (rep+ char-form)
+             apply-str))
+
+(def word-w-final-sigma
+  (semantics (conc any-word final-sigma)
+             apply-str))
+  ;; (complex [chars any-word
+  ;;           sigma final-sigma]
+  ;;          (normalize-apply-str (str (apply str chars) sigma))))
+
 (def word
-     (semantics (rep+ char-form)
+  (semantics (alt word-w-final-sigma
+                  any-word)
 		apply-str))
 
 (def beta-string

@@ -10,7 +10,14 @@
 	      (struct state-s string)))
 
 ;(deftest odyssey-first-line ;; Test that the first line of the Odyssey encodes correctly...
-;  (is (= parse_perseus.core/odyssey_first_line_gk (bc-to-gk parse_perseus.core/odyssey_first_line_bc))))
+;  (is (= parse_perseus.core/odyssey_first_line_gk (bc-to-gk
+                                        ;  parse_perseus.core/odyssey_first_line_bc))))
+
+(deftest final-sigma-only
+  (is (= "ς" (test-rule final-sigma "s"))))
+
+(deftest not-final-sigma
+  (is (= nil (test-rule final-sigma "a"))))
 
 (deftest bc-string-to-gk-test
   (is (= "αβγ" (parse-bc "abg"))))
@@ -22,7 +29,16 @@
   (is (= "αβγ, ΑΒΓ" (parse-bc "abg, *a*b*g"))))
 
 (deftest bc-string-w-final-sigma
-  (is (= "αβγς" (parse-bc "abgs"))))
+  (are [bc greek] (= greek (parse-bc bc))
+       "abgs" "αβγς"
+       "abgs " "αβγς "
+       "abgs:" "αβγς:"))
+
+(deftest bc-word-w-final-sigma
+  (is (= "αας" (test-rule word-w-final-sigma "aas"))))
+
+(deftest bc-any-word
+  (is (= "ας" (test-rule any-word "as"))))
 
 (deftest bc-string-w-sigma
   (is (= "αβσγ" (parse-bc "absg"))))
@@ -39,7 +55,7 @@
        "pla/gxqh, e)pei\\ *troi/hs i(ero\\n ptoli/eqron e)/persen" "πλάγχθη, ἐπεὶ Τροίης ἱερὸν πτολίεθρον ἔπερσεν"
        "a)ll' a)/ge, *faih/kwn bhta/rmones o(/ssoi a)/ristoi," "ἀλλ᾽ ἄγε, Φαιήκων βητάρμονες ὅσσοι ἄριστοι,"
        "to\\n d' a)pameibo/menos prose/fh polu/mhtis *)odusseu/s:" "τὸν δ᾽ ἀπαμειβόμενος προσέφη πολύμητις Ὀδυσσεύς:"
-       "w(s kai\\ nu=n *ai)/gisqos u(pe\\r mo/ron *)atrei/+dao" "ὡς καὶ νῦν Αἴγισθος ὑπὲρ μόρον Ἀτρεΐδαο"))
+       "w(s kai\\ nu=n *ai)/gisqos u(pe\\r mo/ron *)atrei/+dao \"ὡς καὶ νῦν Αἴγισθος ὑπὲρ μόρον Ἀτρεΐδαο\""))
 
 (deftest real-apostrophe
   (are [bc greek] (= greek (test-rule word bc))
@@ -56,7 +72,7 @@
        "i/+" "ΐ"
        "i+" "ϊ"
        "*)o" "Ὀ"
-       "s" (str (char 0x03c2))))
+       "as" "ας"))
 
 (deftest diacritic-grave
   (is (= (char 0x0300) (test-rule diacritic (str \\)))))
@@ -65,4 +81,6 @@
   (is (= (char 0x0301) (test-rule diacritic "/"))))
 
 (deftest test-final-sigma
-  (is (= (str (char 0x03c2) \space) (test-rule final-sigma "s "))))
+  (are [bc greek] (= greek (test-rule final-sigma bc))
+       "s" "ς"
+       "a" nil))
