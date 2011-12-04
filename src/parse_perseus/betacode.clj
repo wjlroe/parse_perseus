@@ -79,13 +79,33 @@
 ;;      (semantics (lit \s)
 ;; 		(fn[x] (str (char (- (beta-char-to-greek-char x) 1))))))
 
-(def any-word
-  (semantics (rep+ char-form)
+(def two-as
+  (semantics (conc (lit \a) (lit \a))
              apply-str))
+
+(def any-word
+  (semantics (rep+ (conc char-form (followed-by char-form)))
+             apply-str))
+
+(def a-or-s
+  (alt (lit \a) (lit \s)))
+
+(def almost-full-word
+  (semantics (rep* (invisi-conc a-or-s (followed-by a-or-s)))
+             str))
+
+(def ends-with-s
+  (semantics
+   (conc
+    almost-full-word
+    (lit \s))
+   apply-str))
+
 
 (def word-w-final-sigma
   (semantics (conc any-word final-sigma)
              apply-str))
+
   ;; (complex [chars any-word
   ;;           sigma final-sigma]
   ;;          (normalize-apply-str (str (apply str chars) sigma))))

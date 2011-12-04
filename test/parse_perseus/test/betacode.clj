@@ -9,10 +9,6 @@
 	      #(println "LEFTOVER: " %)
 	      (struct state-s string)))
 
-;(deftest odyssey-first-line ;; Test that the first line of the Odyssey encodes correctly...
-;  (is (= parse_perseus.core/odyssey_first_line_gk (bc-to-gk
-                                        ;  parse_perseus.core/odyssey_first_line_bc))))
-
 (deftest final-sigma-only
   (is (= "ς" (test-rule final-sigma "s"))))
 
@@ -37,6 +33,18 @@
 (deftest bc-word-w-final-sigma
   (is (= "αας" (test-rule word-w-final-sigma "aas"))))
 
+(deftest bc-word-without-final-sigma
+  (is (= "αα" (test-rule any-word "aa"))))
+
+(deftest check-two-as
+  (is (= "aa" (test-rule two-as "aa"))))
+
+(deftest check-ends-with-s
+  (is (= "aas" (test-rule ends-with-s "aas"))))
+
+(deftest check-almost-full-word
+  (is (= "aa" (test-rule almost-full-word "aas"))))
+
 (deftest bc-any-word
   (is (= "ας" (test-rule any-word "as"))))
 
@@ -55,7 +63,7 @@
        "pla/gxqh, e)pei\\ *troi/hs i(ero\\n ptoli/eqron e)/persen" "πλάγχθη, ἐπεὶ Τροίης ἱερὸν πτολίεθρον ἔπερσεν"
        "a)ll' a)/ge, *faih/kwn bhta/rmones o(/ssoi a)/ristoi," "ἀλλ᾽ ἄγε, Φαιήκων βητάρμονες ὅσσοι ἄριστοι,"
        "to\\n d' a)pameibo/menos prose/fh polu/mhtis *)odusseu/s:" "τὸν δ᾽ ἀπαμειβόμενος προσέφη πολύμητις Ὀδυσσεύς:"
-       "w(s kai\\ nu=n *ai)/gisqos u(pe\\r mo/ron *)atrei/+dao \"ὡς καὶ νῦν Αἴγισθος ὑπὲρ μόρον Ἀτρεΐδαο\""))
+       "w(s kai\\ nu=n *ai)/gisqos u(pe\\r mo/ron *)atrei/+dao" "ὡς καὶ νῦν Αἴγισθος ὑπὲρ μόρον Ἀτρεΐδαο"))
 
 (deftest real-apostrophe
   (are [bc greek] (= greek (test-rule word bc))
