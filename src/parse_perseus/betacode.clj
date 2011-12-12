@@ -28,6 +28,10 @@
 (def apply-str (partial apply str))
 (def diacritic-char (fn[x] (char (diacritics x))))
 
+(defn rep*? [subrule]
+  (semantics (rep* (invisi-conc subrule (followed-by subrule)))
+             apply-str))
+
 (def star (lit \*))
 (def iota-dialytika-tonos
      (constant-semantics (lit-conc-seq "i/+" lit)
@@ -84,23 +88,24 @@
              apply-str))
 
 (def any-word
-  (semantics (rep+ (conc char-form (followed-by char-form)))
+  (semantics (rep*? char-form)
              apply-str))
 
 (def a-or-s
   (alt (lit \a) (lit \s)))
+
+(def word-ending-in-s
+  (semantics
+   (conc (rep*? a-or-s) (lit \s))
+   apply-str))
 
 (def almost-full-word
   (semantics (rep* (invisi-conc a-or-s (followed-by a-or-s)))
              str))
 
 (def ends-with-s
-  (semantics
-   (conc
-    almost-full-word
-    (lit \s))
-   apply-str))
-
+  (semantics word-ending-in-s
+             apply-str))
 
 (def word-w-final-sigma
   (semantics (conc any-word final-sigma)

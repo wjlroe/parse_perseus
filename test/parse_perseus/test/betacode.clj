@@ -6,7 +6,7 @@
 (defn test-rule [rule string]
   (rule-match rule
 	      #(println "FAILED: " %)
-	      #(println "LEFTOVER: " %)
+	      #(println "STATE: " %1 " LEFTOVER: " %2)
 	      (struct state-s string)))
 
 (deftest final-sigma-only
