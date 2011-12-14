@@ -60,14 +60,12 @@
 	       character basic-char]
 	      (str (char (- character 32)) (apply str diacritics))))
 
-(def verse-final-sigma (constant-semantics (lit-conc-seq "s:" lit)
-				     (str (char (- (beta-char-to-greek-char \s) 1)) \:)))
+;; (def verse-final-sigma (constant-semantics (lit-conc-seq "s:" lit)
+;; 				     (str (char (- (beta-char-to-greek-char \s) 1)) \:)))
 
-(def word-final-sigma (constant-semantics (lit-conc-seq "s " lit)
-                                          (str (char (- (beta-char-to-greek-char \s) 1)) \space)))
+;; (def word-final-sigma (constant-semantics (lit-conc-seq "s " lit)
+;;                                           (str (char (- (beta-char-to-greek-char \s) 1)) \space)))
 
-;; (def final-sigma
-;;   (alt verse-final-sigma word-final-sigma))
 (def final-sigma
   (constant-semantics (lit \s)
              (str (char (- (beta-char-to-greek-char \s) 1)))))
@@ -83,37 +81,41 @@
 ;;      (semantics (lit \s)
 ;; 		(fn[x] (str (char (- (beta-char-to-greek-char x) 1))))))
 
-(def two-as
-  (semantics (conc (lit \a) (lit \a))
-             apply-str))
+;; (def two-as
+;;   (semantics (conc (lit \a) (lit \a))
+;;              apply-str))
 
-(def any-word
+(def non-greedy-word
   (semantics (rep*? char-form)
              apply-str))
 
-(def a-or-s
-  (alt (lit \a) (lit \s)))
-
-(def word-ending-in-s
-  (semantics
-   (conc (rep*? a-or-s) (lit \s))
-   apply-str))
-
-(def almost-full-word
-  (semantics (rep* (invisi-conc a-or-s (followed-by a-or-s)))
-             str))
-
-(def ends-with-s
-  (semantics word-ending-in-s
+(def any-character
+  (semantics (rep* char-form)
              apply-str))
+
+(def any-word
+  (semantics (conc char-form any-character)
+             apply-str))
+
+;; (def a-or-s
+;;   (alt (lit \a) (lit \s)))
+
+;; (def word-ending-in-s
+;;   (semantics
+;;    (conc (rep*? a-or-s) final-sigma)
+;;    apply-str))
+
+;; (def almost-full-word
+;;   (semantics (rep* (invisi-conc a-or-s (followed-by a-or-s)))
+;;              str))
+
+;; (def ends-with-s
+;;   (semantics word-ending-in-s
+;;              apply-str))
 
 (def word-w-final-sigma
-  (semantics (conc any-word final-sigma)
+  (semantics (conc non-greedy-word final-sigma)
              apply-str))
-
-  ;; (complex [chars any-word
-  ;;           sigma final-sigma]
-  ;;          (normalize-apply-str (str (apply str chars) sigma))))
 
 (def word
   (semantics (alt word-w-final-sigma

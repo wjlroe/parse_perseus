@@ -36,17 +36,14 @@
 (deftest bc-word-without-final-sigma
   (is (= "αα" (test-rule any-word "aa"))))
 
-(deftest check-two-as
-  (is (= "aa" (test-rule two-as "aa"))))
+;; (deftest check-two-as
+;;   (is (= "aa" (test-rule two-as "aa"))))
 
-(deftest check-ends-with-s
-  (is (= "aas" (test-rule ends-with-s "aas"))))
+;; (deftest check-almost-full-word
+;;   (is (= "aa" (test-rule almost-full-word "aas"))))
 
-(deftest check-almost-full-word
-  (is (= "aa" (test-rule almost-full-word "aas"))))
-
-(deftest bc-any-word
-  (is (= "ας" (test-rule any-word "as"))))
+;; (deftest bc-any-word
+;;   (is (= "ας" (test-rule any-word "as"))))
 
 (deftest bc-string-w-sigma
   (is (= "αβσγ" (parse-bc "absg"))))
