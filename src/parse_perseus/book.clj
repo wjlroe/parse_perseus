@@ -1,13 +1,16 @@
 (ns parse_perseus.book
-  (:use parse_perseus.betacode
-	clojure.xml
-	clojure.pprint
-	[clojure.java.io :only [make-parents file]]
-	[clojure.contrib.duck-streams :only [write-lines copy reader writer]]
-	[clojure.contrib.io :only [delete-file-recursively]]
-	clojure.contrib.prxml)
-  (:import [java.io File BufferedWriter FileReader FileWriter FileOutputStream FileNotFoundException]
-	   [java.util.zip ZipOutputStream ZipEntry]))
+  (:use
+   parse_perseus.betacode
+   clojure.xml
+   clojure.pprint
+   [clojure.java.io :only [make-parents file]]
+   [clojure.contrib.duck-streams :only [write-lines copy reader writer]]
+   [clojure.contrib.io :only [delete-file-recursively]]
+   clojure.contrib.prxml)
+  (:import
+   [java.io File BufferedWriter FileReader
+    FileWriter FileOutputStream FileNotFoundException]
+   [java.util.zip ZipOutputStream ZipEntry]))
 
 (defstruct book
   :title
@@ -58,7 +61,6 @@
 	    [:body
 	     [:h1 (str "Book " (:playorder chapter))]
 	     [:p
-	      ;(for [line (bc-content-from-file (:book-xml book))] (cons line (cons [:br] "\n")))]]])))
 	      (for [line lines] (cons line (cons [:br] "\n")))]]])))
 
 (defn bc-content-from-file [book]
