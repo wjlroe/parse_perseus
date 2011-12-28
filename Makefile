@@ -1,3 +1,3 @@
 book:
 	lein run
-	kindlegen -unicode /tmp/book.epub
+	kindlegen /tmp/book.epub
