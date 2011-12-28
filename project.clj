@@ -11,7 +11,8 @@
                  [sandbar/sandbar-session "0.2.5"]]
   :dev-dependencies [[swank-clojure "1.3.4-SNAPSHOT"]
 		     [deview/lein-deview "1.0.5"]
-                     [lein-ring "0.6.0-SNAPSHOT"]]
+                     [lein-ring "0.6.0-SNAPSHOT"]
+                     [lein-marginalia "0.7.0-SNAPSHOT"]]
   :jvm-opts ["-Dfile.encoding=utf-8"]
   :deview-server 9000
   :main parse_perseus.book)
