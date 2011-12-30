@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<!DOCTYPE TEI.2 PUBLIC "-//TEI P4//DTD Main DTD Driver File//EN" "http://www.tei-c.org/Guidelines/DTD/tei2.dtd" [
+<!ENTITY % TEI.XML "INCLUDE">
+<!ENTITY % PersVerse PUBLIC "-//Perseus P4//DTD Perseus Verse//EN" "http://www.perseus.tufts.edu/DTD/1.0/PersVerse.dtd" >
+%PersVerse;
+]>
+
+<TEI.2>
+
+<teiHeader type="text" status="new">
+
+<fileDesc>
+
+<titleStmt>
+<title>Odyssey (Greek). Machine readable text</title>
+<author>Homer</author>
+&responsibility;
+&fund.AnnCPB;
+</titleStmt>
+
+<extent>about 419Kb</extent>
+
+&Perseus.publish;
+
+<notesStmt><note anchored="yes">Text scanned at U. Chicago in 1989.  Basic SGML tagging by Lauren Burka and Chiara Thayer.</note></notesStmt>
+<sourceDesc>
+<biblStruct>
+	<monogr>
+		<author>Homer</author><title>The Odyssey with an English Translation by A.T. Murray, PH.D. in two volumes</title>
+
+		<imprint><publisher>Cambridge, MA., Harvard University Press; London, William Heinemann, Ltd.</publisher><date>1919</date></imprint>
+	</monogr>
+</biblStruct>
+</sourceDesc>
+
+
+</fileDesc>
+
+<encodingDesc>
+
+<refsDecl doctype="TEI.2">
+<state delim="." unit="book"/>
+<state unit="card"/>
+</refsDecl>
+<refsDecl doctype="TEI.2">
+<state unit="book" delim="."/>
+<state unit="line"/>
+</refsDecl>
+</encodingDesc>
+<profileDesc>
+<langUsage>
+<language id="greek">Greek</language>
+<language id="en">English</language>
+</langUsage>
+</profileDesc>
+
+<revisionDesc>
+<change>
+<date>10/90</date><respStmt><name>Nancy Sultan</name><resp>(n/a)</resp></respStmt><item>Put in card breaks.</item>
+</change>
+<change>
+<date>8/91</date><respStmt><name>EM</name><resp>(n/a)</resp></respStmt><item>Revise DTDs and recheck texts.</item>
+</change>
+</revisionDesc>
+
+</teiHeader>
+<text><body>
+<div1 n="1" type="Book">
+<milestone n="1" unit="card" ed="p"/>
+<l>a)/ndra moi e)/nnepe, mou=sa, polu/tropon, o(\s ma/la polla\</l>
+</div1></body></text>
+</TEI.2>

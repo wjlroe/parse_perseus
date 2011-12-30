@@ -1,4 +1,7 @@
 (ns parse_perseus.book
+  ;; For transforming a Perseus book source to a normalised structure
+  ;; that can be saved to a datastore and futher processed into an
+  ;; ebook file.
   (:use
    parse_perseus.betacode
    clojure.xml
@@ -28,7 +31,10 @@
   :elem-id
   :filename)
 
-(defn write-file [to-file data]
+(defn write-file
+  ;; Write data to a file location - creating all the directories that
+  ;; don't exist
+  [to-file data]
   (do
     (make-parents to-file)
     (with-open [wtr (BufferedWriter. (FileWriter. to-file))]
@@ -36,6 +42,23 @@
 
 ;; (defn write-book-content [from-file to-file book]
 ;;   (write-file to-file (book-content from-file book)))
+
+(defn book-to-struct
+  ;; Takes a book (mainly the xml) and parses it, returning the lines
+  ;; and books found.
+  [book-xml-path]
+  (for [node (xml-seq (parse (file book-xml-path)))
+        :when (and (= :div1 (:tag node))
+                   (= "Book" (:type (:attrs node))))]
+    {:book (Integer/parseInt (:n (:attrs node)))
+     :lines
+     (for [x (:content node)
+           :when (= :l (:tag x))]
+       (let [content (:content x)]
+         (if (= :milestone (:tag (first content)))
+           :paragraph
+           {:greek (parse-bc (first content))
+            :betacode (first content)})))}))
 
 (defn content-file [book-node]
   (for [x (:content book-node)
