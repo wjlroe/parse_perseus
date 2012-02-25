@@ -1,4 +1,5 @@
 pom.xml
+.lein-*
 *jar
 lib
 *~
