@@ -1,16 +1,14 @@
 (ns parse_perseus.book
   (:use
-   parse_perseus.betacode
-   clojure.xml
-   clojure.pprint
-   [clojure.java.io :only [make-parents file]]
-   [clojure.contrib.duck-streams :only [write-lines copy reader writer]]
-   [clojure.contrib.io :only [delete-file-recursively]]
-   clojure.contrib.prxml)
+    parse_perseus.betacode
+    clojure.xml
+    clojure.pprint
+    [clojure.java.io :only [make-parents file copy reader writer delete-file]]
+    [data.xml :only [sexp-as-element emit-str]])
   (:import
-   [java.io File BufferedWriter FileReader
-    FileWriter FileOutputStream FileNotFoundException]
-   [java.util.zip ZipOutputStream ZipEntry]))
+    [java.io File BufferedWriter FileReader
+     FileWriter FileOutputStream FileNotFoundException]
+    [java.util.zip ZipOutputStream ZipEntry]))
 
 (defstruct book
   :title
@@ -46,8 +44,8 @@
 	(parse-bc (first content))))))
 
 (defn book-content [book lines chapter]
-  (with-out-str
-    (prxml [:decl! {:version "1.0"}]
+  (emit-str
+    (sexp-as-element [:decl! {:version "1.0"}]
 	   [:doctype! "html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""]
 	   [:html {:xmlns "http://www.w3.org/1999/xhtml"
 		   :xml:lang "grc"}
@@ -80,8 +78,8 @@
     (assoc book :chapter-files files)))
 
 (defn book-opf [book]
-  (with-out-str
-    (prxml [:decl! {:version "1.0"}]
+  (emit-str
+    (sexp-as-element [:decl! {:version "1.0"}]
 	   [:package {:version "2.0"
 		      :xmlns "http://www.idpf.org/2007/opf"
 		      :unique-identifier (:identifier book)}
@@ -117,8 +115,8 @@
 	       [:reference {:href (:filename chapter) :type "text" :title "Text"}])]])))
 
 (defn cover-page [book]
-  (with-out-str
-    (prxml [:doctype! "html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""]
+  (emit-str
+    (sexp-as-element [:doctype! "html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""]
 	   [:html {:xmlns "http://www.w3.org/1999/xhtml"}
 	    [:head
 	     [:title "Cover"]
@@ -128,8 +126,8 @@
 	      [:img {:src "cover.jpg" :alt "Cover image"}]]]])))
 
 (defn table-of-contents [book]
-  (with-out-str
-    (prxml [:doctype! "html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""]
+  (emit-str
+    (sexp-as-element [:doctype! "html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""]
 	   [:html {:xmlns "http://www.w3.org/1999/xhtml"}
 	    [:head
 	     [:title "Table of Contents"]
@@ -143,8 +141,8 @@
 		  [:a {:href (:filename chapter)} (str "Book " (:playorder chapter))]])]]]])))
 
 (defn book-ncx [book]
-  (with-out-str
-    (prxml [:decl! {:version "1.0" :encoding "UTF-8"}]
+  (emit-str
+    (sexp-as-element [:decl! {:version "1.0" :encoding "UTF-8"}]
 	   [:doctype! "ncx PUBLIC \"-//NISO//DTD ncx 2005-1//EN\"
 	    \"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd\""]
 	   [:ncx {:version "2005-1" :xml:lang "en" :xmlns "http://www.daisy.org/z3986/2005/ncx/"}
@@ -169,8 +167,8 @@
 	     ;;  [:content {:src "book-content.xhtml"}]]]])))
 
 (defn container [book]
-  (with-out-str
-    (prxml [:decl! {:version "1.0" :encoding "UTF-8"}]
+  (emit-str
+    (sexp-as-element [:decl! {:version "1.0" :encoding "UTF-8"}]
 	   [:container {:version "1.0" :xmlns "urn:oasis:names:tc:opendocument:xmlns:container"}
 	    [:rootfiles
 	     [:rootfile {:full-path "OPS/book.opf" :media-type "application/oebps-package+xml"}]]])))
@@ -225,10 +223,20 @@
 (defn write-all-files [book]
   (doall
    (for [thefilename (keys epub-files)
-	 :let [contents-fun (epub-files thefilename)]]
+         :let [contents-fun (epub-files thefilename)]]
      (do
        (println "About to write-file: " thefilename)
        (write-file (str (book :epub-dir) "/" thefilename) (contents-fun book))))))
+
+(defn delete-file-recursively
+  "Delete file f. If it's a directory, recursively delete all its contents.
+  Raise an exception if any deletion fails unless silently is true."
+  [f & [silently]]
+  (let [f (file f)]
+    (if (.isDirectory f)
+      (doseq [child (.listFiles f)]
+        (delete-file-recursively child silently)))
+    (delete-file f silently)))
 
 ;; TODO: Command line arguments - title, xml source, cover image
 (defn -main []
@@ -240,7 +248,7 @@
                            :ident-url "http://en.wikipedia.org/wiki/The_Odyssey"
                            :author "Homer"
                            :cover-image (str home "/Dropbox/perseus/odyssey.jpg")
-                           :book-xml (str home "/Desktop/texts/Classics/Homer/opensource/hom.od_gk.xml")
+                           :book-xml (str home "/Dropbox/perseus/texts/Classics/Homer/opensource/hom.od_gk.xml")
                            :epub-dir "/tmp/epub-book"
                            :epub-filename "/tmp/book.epub")]
       (do

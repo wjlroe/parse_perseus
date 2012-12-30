@@ -1,6 +1,5 @@
 (ns parse_perseus.core
   (:use clojure.pprint
-	[clojure.contrib.string :only [codepoints]]
 	[clojure.set :only [select]]))
 
 ;; Beta Code = bc = funny combinations of chars
@@ -40,6 +39,19 @@
        {:beta \w :greek 0x03c9}
        {:beta \' :greek 0x1fbd}})
 ;       {:beta \' :greek 0x0313}})
+
+(defn codepoints
+  "Returns a sequence of integer Unicode code points in s.  Handles
+  Unicode supplementary characters (above U+FFFF) correctly."
+  [^String s]
+  (let [len (.length s)
+        f (fn thisfn [^String s i]
+            (when (< i len)
+              (let [c (.charAt s i)]
+                (if (Character/isHighSurrogate c)
+                  (cons (.codePointAt s i) (thisfn s (+ 2 i)))
+                  (cons (int c) (thisfn s (inc i)))))))]
+    (lazy-seq (f s 0))))
 
 (defn int-to-hex [number]
   (Integer/toHexString (bit-and number 0xffff)))

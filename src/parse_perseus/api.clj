@@ -6,12 +6,13 @@
    ring.adapter.jetty
    sandbar.stateful-session)
   (:require
-   [clj-json.core :as json]
-   [clojure.contrib.logging :as log]
+   [cheshire.core :as json]
+   [clojure.tools.logging :as log]
    [compojure.route :as route])
   (:import
    [org.codehaus.jackson JsonParseException]
-   [clojure.contrib.condition Condition]))
+;   [clojure.contrib.condition Condition]
+    ))
 
 (defn json-response [data & [status]]
   {:status (or status 200)
@@ -40,9 +41,8 @@
           (json-response {"error" "resource not found"} 404))
       (catch JsonParseException e
         (json-response {"error" "malformed json"} 400))
-      (catch Condition e
-        (let [{:keys [type message]} (meta e)]
-          (json-response {"error" message} (error-codes type)))))))
+      (catch Exception e
+        (json-response {"error" "something went wrong"} 500)))))
 
 (defn log-everything
   [handler]
