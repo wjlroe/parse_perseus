@@ -240,7 +240,7 @@
                            :ident-url "http://en.wikipedia.org/wiki/The_Odyssey"
                            :author "Homer"
                            :cover-image (str home "/Dropbox/perseus/odyssey.jpg")
-                           :book-xml (str home "/Desktop/texts/Classics/Homer/opensource/hom.od_gk.xml")
+                           :book-xml (str home "/Dropbox/perseus/texts/Classics/Homer/opensource/hom.od_gk.xml")
                            :epub-dir "/tmp/epub-book"
                            :epub-filename "/tmp/book.epub")]
       (do
