@@ -1,7 +1,7 @@
 (ns parse_perseus.betacode
   (:use name.choi.joshua.fnparse
-	clojure.pprint
-	parse_perseus.core)
+        clojure.pprint
+        parse_perseus.core)
   (:import java.text.Normalizer))
 
 (defstruct state-s :remainder)
