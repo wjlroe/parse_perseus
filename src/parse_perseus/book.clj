@@ -1,16 +1,14 @@
 (ns parse_perseus.book
-  (:use
-   parse_perseus.betacode
-   clojure.xml
-   clojure.pprint
-   [clojure.java.io :only [make-parents file]]
-   [clojure.contrib.duck-streams :only [write-lines copy reader writer]]
-   [clojure.contrib.io :only [delete-file-recursively]]
-   clojure.contrib.prxml)
-  (:import
-   [java.io File BufferedWriter FileReader
-    FileWriter FileOutputStream FileNotFoundException]
-   [java.util.zip ZipOutputStream ZipEntry]))
+  (:use parse_perseus.betacode
+        clojure.xml
+        clojure.pprint
+        [clojure.java.io :only [make-parents file copy delete-file]])
+  (:require [clojure.data.xml :as xml]
+            [hiccup.page :as page]
+            [hiccup.core :as hiccup])
+  (:import [java.io File BufferedWriter FileReader
+            FileWriter FileOutputStream FileNotFoundException]
+           [java.util.zip ZipOutputStream ZipEntry]))
 
 (defstruct book
   :title
@@ -27,6 +25,9 @@
   :playorder
   :elem-id
   :filename)
+
+(def ncx-doctype
+  "<!DOCTYPE ncx PUBLIC \"-//NISO//DTD ncx 2005-1//EN\" \"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd\">\n")
 
 (defn write-file [to-file data]
   (do
@@ -46,22 +47,19 @@
 	(parse-bc (first content))))))
 
 (defn book-content [book lines chapter]
-  (with-out-str
-    (prxml [:decl! {:version "1.0"}]
-	   [:doctype! "html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""]
-	   [:html {:xmlns "http://www.w3.org/1999/xhtml"
-		   :xml:lang "grc"}
-	    [:head
-	     [:meta {:http-equiv "Content-Type"
-		     :content "application/xhtml+xml; charset=utf-8"}]
-	     [:title (:title book)]
-	     [:link {:rel "stylesheet"
-		     :href "style.css"
-		     :type "text/css"}]]
-	    [:body
-	     [:h1 (str "Book " (:playorder chapter))]
-	     [:p
-	      (for [line lines] (cons line (cons [:br] "\n")))]]])))
+  (page/xhtml
+    {:doctype "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n" :lang "grc"}
+    [:head
+     [:meta {:http-equiv "Content-Type"
+             :content "application/xhtml+xml; charset=utf-8"}]
+     [:title (:title book)]
+     [:link {:rel "stylesheet"
+             :href "style.css"
+             :type "text/css"}]]
+    [:body
+     [:h1 (str "Book " (:playorder chapter))]
+     [:p
+      (for [line lines] (cons line (cons [:br] "\n")))]]))
 
 (defn bc-content-from-file [book]
   (let [files
@@ -80,8 +78,8 @@
     (assoc book :chapter-files files)))
 
 (defn book-opf [book]
-  (with-out-str
-    (prxml [:decl! {:version "1.0"}]
+  (xml/emit-str
+    (xml/sexp-as-element
 	   [:package {:version "2.0"
 		      :xmlns "http://www.idpf.org/2007/opf"
 		      :unique-identifier (:identifier book)}
@@ -97,9 +95,6 @@
 	    [:manifest
 	     (for [chapter (:chapter-files book)]
 	       [:item {:id (:elem-id chapter) :href (:filename chapter) :media-type "application/xhtml+xml"}])
-	     ;; [:item {:id "book-content"
-	     ;; 	     :href "book-content.xhtml"
-	     ;; 	     :media-type "application/xhtml+xml"}]
 	     [:item {:id "stylesheet" :href "style.css" :media-type "text/css"}]
 	     [:item {:id "ncx" :href "book.ncx" :media-type "application/x-dtbncx+xml"}]
 	     [:item {:id "cover" :href "cover.html" :media-type "application/xhtml+xml"}]
@@ -117,63 +112,57 @@
 	       [:reference {:href (:filename chapter) :type "text" :title "Text"}])]])))
 
 (defn cover-page [book]
-  (with-out-str
-    (prxml [:doctype! "html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""]
-	   [:html {:xmlns "http://www.w3.org/1999/xhtml"}
-	    [:head
-	     [:title "Cover"]
-	     [:style {:type "text/css"} "img { max-width: 100%; height: 100% }"]]
-	    [:body
-	     [:div {:id "cover-image"}
-	      [:img {:src "cover.jpg" :alt "Cover image"}]]]])))
+  (page/xhtml
+    {:doctype "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"}
+    [:head
+     [:title "Cover"]
+     [:style {:type "text/css"} "img { max-width: 100%; height: 100% }"]]
+    [:body
+     [:div {:id "cover-image"}
+      [:img {:src "cover.jpg" :alt "Cover image"}]]]))
 
 (defn table-of-contents [book]
-  (with-out-str
-    (prxml [:doctype! "html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""]
-	   [:html {:xmlns "http://www.w3.org/1999/xhtml"}
-	    [:head
-	     [:title "Table of Contents"]
-	     [:style {:type "text/css"} "img { max-width: 100%; height: 100% }"]]
-	    [:body
-	     [:div {:id "contents"}
-	      [:h2 "Contents"]
-	      [:ul
-	       (for [chapter (:chapter-files book)]
-		 [:li
-		  [:a {:href (:filename chapter)} (str "Book " (:playorder chapter))]])]]]])))
+  (page/xhtml
+    {:doctype "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"}
+    [:head
+     [:title "Table of Contents"]
+     [:style {:type "text/css"} "img { max-width: 100%; height: 100% }"]]
+    [:body
+     [:div {:id "contents"}
+      [:h2 "Contents"]
+      [:ul
+       (for [chapter (:chapter-files book)]
+         [:li
+          [:a {:href (:filename chapter)} (str "Book " (:playorder chapter))]])]]]))
 
 (defn book-ncx [book]
-  (with-out-str
-    (prxml [:decl! {:version "1.0" :encoding "UTF-8"}]
-	   [:doctype! "ncx PUBLIC \"-//NISO//DTD ncx 2005-1//EN\"
-	    \"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd\""]
-	   [:ncx {:version "2005-1" :xml:lang "en" :xmlns "http://www.daisy.org/z3986/2005/ncx/"}
-	    [:head
-	     [:meta {:name "dtb:uid" :content (:ident-url book)}]
-	     [:meta {:name "dtb:depth" :content "1"}]
-	     [:meta {:name "dtb:totalPageCount" :content "0"}]
-	     [:meta {:name "dtb:maxPageNumber" :content "0"}]]
-	    [:docTitle
-	     [:text (:title book)]]
-	    [:navMap
-	     [:navPoint {:id "toc" :playOrder "0"}
-	      [:navLabel [:text "Table of Contents"]]
-	      [:content {:src "toc.html"}]]
-	     (for [chapter (:chapter-files book)]
-	       [:navPoint {:class "chapter" :id (:elem-id chapter) :playOrder (:playorder chapter)}
-		[:navLabel [:text (str "Book " (:playorder chapter))]]
-		[:content {:src (:filename chapter)}]])]])))
-
-	     ;; [:navPoint {:class "chapter" :id "book-content" :playOrder "1"}
-	     ;;  [:navLabel [:text "Chapter 1"]]
-	     ;;  [:content {:src "book-content.xhtml"}]]]])))
+  (hiccup/html
+    {:mode :xml}
+    (page/xml-declaration "UTF-8")
+    ncx-doctype
+    [:ncx {:version "2005-1" :xml:lang "en" :xmlns "http://www.daisy.org/z3986/2005/ncx/"}
+     [:head
+      [:meta {:name "dtb:uid" :content (:ident-url book)}]
+      [:meta {:name "dtb:depth" :content "1"}]
+      [:meta {:name "dtb:totalPageCount" :content "0"}]
+      [:meta {:name "dtb:maxPageNumber" :content "0"}]]
+     [:docTitle
+      [:text (:title book)]]
+     [:navMap
+      [:navPoint {:id "toc" :playOrder "0"}
+       [:navLabel [:text "Table of Contents"]]
+       [:content {:src "toc.html"}]]
+      (for [chapter (:chapter-files book)]
+        [:navPoint {:class "chapter" :id (:elem-id chapter) :playOrder (:playorder chapter)}
+         [:navLabel [:text (str "Book " (:playorder chapter))]]
+         [:content {:src (:filename chapter)}]])]]))
 
 (defn container [book]
-  (with-out-str
-    (prxml [:decl! {:version "1.0" :encoding "UTF-8"}]
-	   [:container {:version "1.0" :xmlns "urn:oasis:names:tc:opendocument:xmlns:container"}
-	    [:rootfiles
-	     [:rootfile {:full-path "OPS/book.opf" :media-type "application/oebps-package+xml"}]]])))
+  (xml/emit-str
+    (xml/sexp-as-element
+      [:container {:version "1.0" :xmlns "urn:oasis:names:tc:opendocument:xmlns:container"}
+       [:rootfiles
+        [:rootfile {:full-path "OPS/book.opf" :media-type "application/oebps-package+xml"}]]])))
 
 (defn mimetype [book]
   "application/epub+zip
@@ -230,6 +219,16 @@
        (println "About to write-file: " thefilename)
        (write-file (str (book :epub-dir) "/" thefilename) (contents-fun book))))))
 
+(defn delete-file-recursively
+  "Delete file f. If it's a directory, recursively delete all its contents.
+  Raise an exception if any deletion fails unless silently is true."
+  [f & [silently]]
+  (let [f (file f)]
+    (if (.isDirectory f)
+      (doseq [child (.listFiles f)]
+        (delete-file-recursively child silently)))
+    (delete-file f silently)))
+
 ;; TODO: Command line arguments - title, xml source, cover image
 (defn -main []
   (try
@@ -256,6 +255,3 @@
         (println "File not found: " (.getMessage e))))
     (finally
       (println "Done."))))
-
-
-
