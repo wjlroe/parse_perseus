@@ -40,7 +40,7 @@
         :when (= :l (:tag x))]
     (let [content (:content x)]
       (if (= :milestone (:tag (first content)))
-        (cons [:raw! "</p>\n<p>"] (parse-bc (second content)))
+        (str "</p>\n<p>" (parse-bc (second content)))
         (parse-bc (first content))))))
 
 (defn book-content [book lines chapter]
