@@ -8,7 +8,12 @@
     :identifier "odyssey_gk"
     :ident-url "http://en.wikipedia.org/wiki/The_Odyssey"
     :author "Homer"
-    :cover-image (str home "/Dropbox/perseus/odyssey.jpg")
-    :book-xml (str home "/Dropbox/perseus/texts/Classics/Homer/opensource/hom.od_gk.xml")
-    :epub-dir "/tmp/epub-book"
-    :epub-filename "/tmp/book.epub"}})
+    :cover-image "odyssey.jpg"
+    :book-xml "Classics/Homer/opensource/hom.od_gk.xml"}
+   :xenophon_minor
+   {:title "Minor Works"
+    :identifier "opuscula_gk"
+    :ident-url "http://www.perseus.tufts.edu/hopper/search?doc=Perseus%3atext%3a1999.01.0209"
+    :author "Xenophon"
+    :cover-image "minor_works.jpg"
+    :book-xml "Classics/Xenophon/opensource/xen.opuscula_gk.xml"}})

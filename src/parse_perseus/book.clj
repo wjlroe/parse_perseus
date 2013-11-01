@@ -1,15 +1,42 @@
 (ns parse_perseus.book
   (:use parse_perseus.betacode
         clojure.xml
-        clojure.pprint
         [clojure.java.io :only [make-parents file copy delete-file]])
   (:require [clojure.data.xml :as xml]
             [hiccup.page :as page]
             [hiccup.core :as hiccup]
+            [environ.core :as env]
+            [clojure.stacktrace :as stack]
             [parse_perseus.books :as books])
   (:import [java.io File BufferedWriter FileReader
             FileWriter FileOutputStream FileNotFoundException]
            [java.util.zip ZipOutputStream ZipEntry]))
+
+(def home (System/getProperty "user.home"))
+(def covers-dir (or (some-> (env/env :perseus-covers-dir) file)
+                    (file home "Dropbox/perseus")))
+(def texts-dir (or (some-> (env/env :perseus-texts-dir) file)
+                   (file home "Dropbox/perseus/texts")))
+(def print-debug-messages (some-> (env/env :debug) (= "true")))
+
+(defn ebook-dir [{:keys [identifier]}]
+  (file "/tmp/perseus-books" identifier))
+
+(defn ebook-filename [{:keys [identifier]}]
+  (file "/tmp/perseus-books" (str identifier ".epub")))
+
+(defn book-xml [{:keys [book-xml]}]
+  (file texts-dir book-xml))
+
+(defn cover-image-file [{:keys [cover-image]}]
+  (file covers-dir cover-image))
+
+(defn cover-image? [book]
+  (.exists (cover-image-file book)))
+
+(defn debug [& stuffs]
+  (when print-debug-messages
+    (apply println stuffs)))
 
 (defstruct chapter
   :playorder
@@ -50,7 +77,7 @@
 
 (defn bc-content-from-file [book]
   (let [files
-        (for [node (xml-seq (parse (file (:book-xml book))))
+        (for [node (xml-seq (parse (book-xml book)))
               :when (and (= :div1 (:tag node)) (= "Book" (:type (:attrs node))))]
           (let [playorder (:n (:attrs node))
                 elem-id (str "book-" playorder)
@@ -59,7 +86,7 @@
                                     :elem-id elem-id
                                     :filename (str elem-id ".xhtml"))]
             (do
-              (write-file (str (book :epub-dir) "/OPS/" (:filename chapter))
+              (write-file (file (ebook-dir book) (str "OPS/" (:filename chapter)))
                           (book-content book (content-file node) chapter))
               chapter)))]
     (assoc book :chapter-files files)))
@@ -78,7 +105,9 @@
         [:dc:language {:xsi:type "dcterms:RFC3066"} "en-us"]
         [:dc:identifier {:id (:identifier book) :opf:scheme "URL"} (:ident-url book)]
         [:dc:creator {:opf:file-as (:author book) :opf:role "aut"} (:author book)]
-        [:meta {:name "cover" :content "cover-image"}]]
+        (when (cover-image? book)
+          [:meta {:name "cover" :content "cover-image"}])
+        ]
        [:manifest
         (for [chapter (:chapter-files book)]
           [:item {:id (:elem-id chapter) :href (:filename chapter) :media-type "application/xhtml+xml"}])
@@ -86,7 +115,9 @@
         [:item {:id "ncx" :href "book.ncx" :media-type "application/x-dtbncx+xml"}]
         [:item {:id "cover" :href "cover.html" :media-type "application/xhtml+xml"}]
         [:item {:id "toc" :href "toc.html" :media-type "application/xhtml+xml"}]
-        [:item {:id "cover-image" :href "cover.jpg" :media-type "image/jpeg"}]]
+        (when (cover-image? book)
+          [:item {:id "cover-image" :href "cover.jpg" :media-type "image/jpeg"}])
+        ]
        [:spine {:toc "ncx"}
         [:itemref {:idref "cover" :linear "no"}]
         [:itemref {:idref "toc" :linear "no"}]
@@ -105,8 +136,9 @@
      [:title "Cover"]
      [:style {:type "text/css"} "img { max-width: 100%; height: 100% }"]]
     [:body
-     [:div {:id "cover-image"}
-      [:img {:src "cover.jpg" :alt "Cover image"}]]]))
+     (when (cover-image? book)
+       [:div {:id "cover-image"}
+        [:img {:src "cover.jpg" :alt "Cover image"}]])]))
 
 (defn table-of-contents [book]
   (page/xhtml
@@ -179,32 +211,38 @@
 
 (defn copy-cover-image [book]
   (copy
-    (file (:cover-image book))
-    (file (str (:epub-dir book) "/OPS/cover.jpg"))))
+    (file (file covers-dir (:cover-image book)))
+    (file (ebook-dir book) "OPS/cover.jpg")))
 
 (defn create-epub [book]
-  (with-open [out (-> (file (:epub-filename book))
-                      (FileOutputStream.)
-                      (ZipOutputStream.))]
-    (dorun
-      (for [thisfile (concat (keys epub-files) ["OPS/cover.jpg"] (map #(str "OPS/" (:filename %)) (:chapter-files book)))
-            :let [filename (str (:epub-dir book) "/" thisfile)]]
-        (let [entry (ZipEntry. thisfile)]
-          (do
-            (if (= "metadata" thisfile)
-              (.setMethod entry ZipEntry/STORED))
-            (println "About to put a file into zip :" filename)
-            (.putNextEntry out (ZipEntry. thisfile))
-            (println "Have put file: " filename)
-            (copy (file filename) out)))))))
+  (let [files (concat (keys epub-files) (map #(str "OPS/" (:filename %)) (:chapter-files book)))
+        files (if (cover-image? book)
+                (concat files ["OPS/cover.jpg"])
+                files)]
+    (with-open [out (-> (ebook-filename book)
+                        (FileOutputStream.)
+                        (ZipOutputStream.))]
+      (dorun
+        (for [thisfile files
+              :let [filename (file (ebook-dir book) thisfile)]]
+          (let [entry (ZipEntry. thisfile)]
+            (do
+              (if (= "metadata" thisfile)
+                (.setMethod entry ZipEntry/STORED))
+              (debug "About to put a file into zip :" (.getPath filename))
+              (.putNextEntry out (ZipEntry. thisfile))
+              (debug "Have put file: " (.getPath filename))
+              (copy (file filename) out)
+              (debug "EBook file generated: " (.getPath (ebook-filename book))))))))))
 
 (defn write-all-files [book]
   (doall
     (for [thefilename (keys epub-files)
           :let [contents-fun (epub-files thefilename)]]
       (do
-        (println "About to write-file: " thefilename)
-        (write-file (str (book :epub-dir) "/" thefilename) (contents-fun book))))))
+        (debug "About to write-file: " thefilename)
+        (write-file (file (ebook-dir book) thefilename)
+                    (contents-fun book))))))
 
 (defn delete-file-recursively
   "Delete file f. If it's a directory, recursively delete all its contents.
@@ -219,14 +257,14 @@
 (defn generate-book [book]
   (try
     (do
-      (delete-file-recursively (:epub-dir book) true)
+      (delete-file-recursively (ebook-dir book) true)
       (let [new-book (bc-content-from-file book)]
-        (do
-          (pprint new-book)
-          (write-all-files new-book)
-          (copy-cover-image new-book)
-          (create-epub new-book))))
+        (write-all-files new-book)
+        (when (cover-image? book)
+          (copy-cover-image new-book))
+        (create-epub new-book)))
     (catch FileNotFoundException e
+      (stack/print-stack-trace e)
       (println "File not found: " (.getMessage e)))
     (finally
       (println "Done.")) ))
