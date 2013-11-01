@@ -9,8 +9,6 @@
                  [ring/ring-jetty-adapter "1.2.1"]
                  [cheshire "5.2.0"]
                  [environ "0.4.0"]]
-  :dev-dependencies [[lein-ring "0.8.3"]
-                     [lein-marginalia "0.7.1"]]
   :jvm-opts ["-Dfile.encoding=utf-8"]
   :deview-server 9000
   :main parse_perseus.book)
