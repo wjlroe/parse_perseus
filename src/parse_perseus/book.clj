@@ -5,21 +5,11 @@
         [clojure.java.io :only [make-parents file copy delete-file]])
   (:require [clojure.data.xml :as xml]
             [hiccup.page :as page]
-            [hiccup.core :as hiccup])
+            [hiccup.core :as hiccup]
+            [parse_perseus.books :as books])
   (:import [java.io File BufferedWriter FileReader
             FileWriter FileOutputStream FileNotFoundException]
            [java.util.zip ZipOutputStream ZipEntry]))
-
-(defstruct book
-  :title
-  :identifier
-  :ident-url
-  :author
-  :cover-image
-  :epub-filename
-  :epub-dir
-  :book-xml
-  :chapter-files)
 
 (defstruct chapter
   :playorder
@@ -226,29 +216,26 @@
         (delete-file-recursively child silently)))
     (delete-file f silently)))
 
-;; TODO: Command line arguments - title, xml source, cover image
-(defn -main []
+(defn generate-book [book]
   (try
-    (let [home (System/getProperty "user.home")
-          book (struct-map book
-                           :title "Ὀδύσσεια"
-                           :identifier "odyssey_gk"
-                           :ident-url "http://en.wikipedia.org/wiki/The_Odyssey"
-                           :author "Homer"
-                           :cover-image (str home "/Dropbox/perseus/odyssey.jpg")
-                           :book-xml (str home "/Dropbox/perseus/texts/Classics/Homer/opensource/hom.od_gk.xml")
-                           :epub-dir "/tmp/epub-book"
-                           :epub-filename "/tmp/book.epub")]
-      (do
-        (delete-file-recursively (:epub-dir book) true)
-        (let [new-book (bc-content-from-file book)]
-          (do
-            (pprint new-book)
-            (write-all-files new-book)
-            (copy-cover-image new-book)
-            (create-epub new-book)))))
+    (do
+      (delete-file-recursively (:epub-dir book) true)
+      (let [new-book (bc-content-from-file book)]
+        (do
+          (pprint new-book)
+          (write-all-files new-book)
+          (copy-cover-image new-book)
+          (create-epub new-book))))
     (catch FileNotFoundException e
-      (do
-        (println "File not found: " (.getMessage e))))
+      (println "File not found: " (.getMessage e)))
     (finally
-      (println "Done."))))
+      (println "Done.")) ))
+
+;; TODO: Command line arguments - title, xml source, cover image
+(defn -main [& args]
+  (let [book-to-generate (some-> (first args) keyword)
+        book (or (get books/books book-to-generate) :all)]
+    (if (= book :all)
+      (for [[name book] books/books]
+        (generate-book book))
+      (generate-book book))))
