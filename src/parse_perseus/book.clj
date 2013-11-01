@@ -1,16 +1,19 @@
 (ns parse_perseus.book
-  (:use parse_perseus.betacode
-        clojure.xml
-        [clojure.java.io :only [make-parents file copy delete-file]])
-  (:require [clojure.data.xml :as xml]
-            [hiccup.page :as page]
-            [hiccup.core :as hiccup]
-            [environ.core :as env]
-            [clojure.stacktrace :as stack]
-            [parse_perseus.books :as books])
-  (:import [java.io File BufferedWriter FileReader
-            FileWriter FileOutputStream FileNotFoundException]
-           [java.util.zip ZipOutputStream ZipEntry]))
+  (:use
+    parse_perseus.betacode
+    clojure.xml
+    [clojure.java.io :only [make-parents file copy delete-file]])
+  (:require
+    [clojure.data.xml :as xml]
+    [hiccup.page :as page]
+    [hiccup.core :as hiccup]
+    [environ.core :as env]
+    [clojure.stacktrace :as stack]
+    [parse_perseus.books :as books])
+  (:import
+    [java.io File BufferedWriter FileReader
+     FileWriter FileOutputStream FileNotFoundException]
+    [java.util.zip ZipOutputStream ZipEntry]))
 
 (def home (System/getProperty "user.home"))
 (def covers-dir (or (some-> (env/env :perseus-covers-dir) file)
