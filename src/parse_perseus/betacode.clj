@@ -1,11 +1,47 @@
 (ns parse_perseus.betacode
-  (:use name.choi.joshua.fnparse
-        clojure.pprint
-        parse_perseus.core)
+  (:use
+    name.choi.joshua.fnparse
+    clojure.pprint
+    [clojure.set :only [select]]
+    parse_perseus.core)
   (:import java.text.Normalizer))
 
 (defstruct state-s :remainder)
 
+(def beta-map
+     #{{:beta \a :greek 0x03b1}
+       {:beta \b :greek 0x03b2}
+       {:beta \g :greek 0x03b3}
+       {:beta \d :greek 0x03b4}
+       {:beta \e :greek 0x03b5}
+       {:beta \z :greek 0x03b6}
+       {:beta \h :greek 0x03b7}
+       {:beta \q :greek 0x03b8}
+       {:beta \i :greek 0x03b9}
+       {:beta \k :greek 0x03ba}
+       {:beta \l :greek 0x03bb}
+       {:beta \m :greek 0x03bc}
+       {:beta \n :greek 0x03bd}
+       {:beta \c :greek 0x03be}
+       {:beta \o :greek 0x03bf}
+       {:beta \p :greek 0x03c0}
+       {:beta \r :greek 0x03c1}
+       {:beta \s :greek 0x03c3}
+       {:beta \t :greek 0x03c4}
+       {:beta \u :greek 0x03c5}
+       {:beta \f :greek 0x03c6}
+       {:beta \x :greek 0x03c7}
+       {:beta \y :greek 0x03c8}
+       {:beta \w :greek 0x03c9}
+       {:beta \' :greek 0x1fbd}})
+
+(defn beta-char-to-greek-char [char]
+  (-> (select #(= (:beta %) char) beta-map)
+      first
+      :greek))
+
+(defn bc-string-to-gk [code]
+  (apply str (map #(char (beta-char-to-greek-char %)) code)))
 
 ;; Need to combine some more specifically rather than relying on normalisation...
 ;; BUT this won't work with the lit-alt-seq because it assumes char literals as keys
@@ -96,4 +132,3 @@
 	      #(println "FAILED: " %)
 	      #(println "LEFTOVER: " %2)
 	      (struct state-s tokens)))
-
