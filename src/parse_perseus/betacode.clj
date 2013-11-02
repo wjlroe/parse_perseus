@@ -2,8 +2,7 @@
   (:use
     name.choi.joshua.fnparse
     clojure.pprint
-    [clojure.set :only [select]]
-    parse_perseus.core)
+    [clojure.set :only [select]])
   (:import java.text.Normalizer))
 
 (defstruct state-s :remainder)
