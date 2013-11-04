@@ -9,6 +9,7 @@
     [hiccup.core :as hiccup]
     [environ.core :as env]
     [clojure.stacktrace :as stack]
+    [clojure.java.io :as io]
     [parse_perseus.books :as books])
   (:import
     [java.io File BufferedWriter FileReader
@@ -63,6 +64,11 @@
         (str "</p>\n<p>" (parse-bc (second content)))
         (parse-bc (first content))))))
 
+(defn parse-book-xml [{:keys [book-xml]}]
+  (for [node (xml/parse (io/reader book-xml))
+        :when (= :l (:tag node))]
+    (:content node)))
+
 (defn book-content [book lines chapter]
   (page/xhtml
     {:doctype "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n" :lang "grc"}
@@ -78,10 +84,17 @@
      [:p
       (for [line lines] (cons line (cons [:br] "\n")))]]))
 
+(defn chapter-generating-element [element]
+  (or
+    ; a div1 with type="Book"
+    (and (= :div1 (:tag element)) (= "Book" (:type (:attrs element))))
+    ; a text element with an n attribute
+    (and (= :text (:tag element)) (contains? (:attrs element) :n))))
+
 (defn bc-content-from-file [book]
   (let [files
         (for [node (xml-seq (parse (book-xml book)))
-              :when (and (= :div1 (:tag node)) (= "Book" (:type (:attrs node))))]
+              :when (chapter-generating-element node)]
           (let [playorder (:n (:attrs node))
                 elem-id (str "book-" playorder)
                 chapter (struct-map chapter
