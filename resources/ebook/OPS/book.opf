@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="{{identifier}}">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:opf="http://www.idpf.org/2007/opf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <dc:title>{{title}}</dc:title>
+    <dc:language xsi:type="dcterms:RFC3066">en-us</dc:language>
+    <dc:identifier id="{{identifier}}" opf:scheme="URL">{{ident-url}}</dc:identifier>
+    <dc:creator opf:file-as="{{author|author-file-as}}" opf:role="aut">{{author}}</dc:creator>
+    {% if cover-image %}
+    <meta name="cover" content="cover-image" />
+    {% endif %}
+  </metadata>
+  <manifest>
+    <item id="chapter-file" href="filename" media-type="application/xhtml+xml" />
+    <item id="stylesheet" href="style.css" media-type="text/css" />
+    <item id="ncx" href="book.ncx" media-type="application/x-dtbncx+xml" />
+    <item id="cover" href="cover.html" media-type="application/xhtml+xml" />
+    <item id="toc" href="toc.html" media-type="application/xhtml+xml" />
+    {% if cover-image %}
+    <item id="cover-image" href="{{cover-image}}" media-type="image/jpeg" />
+    {% endif %}
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="cover" linear="no" />
+    <itemref idref="toc" linear="no" />
+    {% for chapter in chapter-files %}
+    <itemref idref="{{chapter.id}}" />
+    {% endfor %}
+  </spine>
+  <guide>
+    <reference href="cover.html" type="cover" title="Cover" />
+    <reference href="toc.html" type="toc" title="Table of Contents" />
+    {% for chapter in chapter-files %}
+    <reference href="{{chapter.filename}}" type="text" title="Text" />
+    {% endfor %}
+  </guide>
+</package>

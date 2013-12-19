@@ -8,7 +8,8 @@
                  [ring/ring-json "0.2.0"]
                  [ring/ring-jetty-adapter "1.2.1"]
                  [cheshire "5.2.0"]
-                 [environ "0.4.0"]]
+                 [environ "0.4.0"]
+                 [selmer "0.5.4"]]
   :profiles {:dev {:dependencies [[expectations "1.4.52"]]}}
   :jvm-opts ["-Dfile.encoding=utf-8"]
   :deview-server 9000
