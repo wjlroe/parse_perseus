@@ -3,7 +3,8 @@
     name.choi.joshua.fnparse
     clojure.pprint
     [clojure.set :only [select]])
-  (:import java.text.Normalizer))
+  (:import
+    java.text.Normalizer))
 
 (defstruct state-s :remainder)
 
@@ -67,39 +68,39 @@
 
 (def star (lit \*))
 (def iota-dialytika-tonos
-     (constant-semantics (lit-conc-seq "i/+" lit)
-			 (char 0x0390)))
+  (constant-semantics (lit-conc-seq "i/+" lit)
+                      (char 0x0390)))
 (def diacritic
-     (semantics (lit-alt-seq (keys diacritics) lit)
-		diacritic-char))
+  (semantics (lit-alt-seq (keys diacritics) lit)
+             diacritic-char))
 
 (def diacritic-chars
-     (rep* diacritic))
+  (rep* diacritic))
 
 (def basic-char
-     (semantics (lit-alt-seq (map :beta beta-map) lit)
-		beta-char-to-greek-char))
+  (semantics (lit-alt-seq (map :beta beta-map) lit)
+             beta-char-to-greek-char))
 
 (def lower-char
-     (complex [basic basic-char]
-	      (char basic)))
+  (complex [basic basic-char]
+           (char basic)))
 
 (def upper-char
-     (complex [_ star
-	       diacritics diacritic-chars
-	       character basic-char]
-	      (str (char (- character 32)) (apply str diacritics))))
+  (complex [_ star
+            diacritics diacritic-chars
+            character basic-char]
+           (str (char (- character 32)) (apply str diacritics))))
 
 (def final-sigma
   (constant-semantics (lit \s)
-             (str (char (- (beta-char-to-greek-char \s) 1)))))
+                      (str (char (- (beta-char-to-greek-char \s) 1)))))
 
 (def character (alt iota-dialytika-tonos upper-char lower-char))
 
 (def char-form
-     (complex [char character
-	       diacritics diacritic-chars]
-	      (normalize-apply-str (str char (apply str diacritics)))))
+  (complex [char character
+            diacritics diacritic-chars]
+           (normalize-apply-str (str char (apply str diacritics)))))
 
 (def non-greedy-word
   (semantics (rep*? char-form)
@@ -120,14 +121,14 @@
 (def word
   (semantics (alt word-w-final-sigma
                   any-word)
-		apply-str))
+             apply-str))
 
 (def beta-string
-     (semantics (rep* (alt word anything))
-		apply-str))
+  (semantics (rep* (alt word anything))
+             apply-str))
 
 (defn parse-bc [tokens]
   (rule-match beta-string
-	      #(println "FAILED: " %)
-	      #(println "LEFTOVER: " %2)
-	      (struct state-s tokens)))
+              #(println "FAILED: " %)
+              #(println "LEFTOVER: " %2)
+              (struct state-s tokens)))
