@@ -40,19 +40,19 @@
 
 (defn create-epub-files
   [{:keys [ebook-location] :as book}]
-  (doseq [[filename content-fun] epub-files]
-    (let [filename (str (file ebook-location filename))]
-      (make-parents filename)
-      (spit filename (content-fun book))))
+  (doseq [[filename content-fun] epub-files
+          :let [filename (str (file ebook-location filename))]]
+    (make-parents filename)
+    (spit filename (content-fun book)))
   book)
 
 (defn create-chapter-files
   [{:keys [ebook-location chapter-files] :as book}]
-  (doseq [{:keys [filename] :as chapter} chapter-files]
-    (let [filename (str (file ebook-location "OPS" filename))
-          book' (assoc book :chapter chapter)]
-      (make-parents filename)
-      (spit filename (ops-chapter book'))))
+  (doseq [{:keys [filename] :as chapter} chapter-files
+          :let [filename (str (file ebook-location "OPS" filename))
+                book' (assoc book :chapter chapter)]]
+    (make-parents filename)
+    (spit filename (ops-chapter book')))
   book)
 
 (defn cover-image
