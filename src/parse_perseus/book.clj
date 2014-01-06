@@ -66,9 +66,10 @@
         (parse-bc (first content))))))
 
 (defn parse-book-xml [{:keys [book-xml]}]
-  (for [node (xml/parse (io/reader book-xml))
-        :when (= :l (:tag node))]
-    (:content node)))
+  (with-open [rdr (io/reader book-xml)]
+    (for [node (xml/parse rdr)
+          :when (= :l (:tag node))]
+      (:content node))))
 
 (defn book-content [book lines chapter]
   (page/xhtml
