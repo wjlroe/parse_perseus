@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!DOCTYPE TEI.2 PUBLIC "-//TEI P4//DTD Main DTD Driver File//EN" "http://www.tei-c.org/Guidelines/DTD/tei2.dtd" [
+<!ENTITY % TEI.XML "INCLUDE">
+<!ENTITY % PersVerse PUBLIC "-//Perseus P4//DTD Perseus Verse//EN" "http://www.perseus.tufts.edu/DTD/1.0/PersVerse.dtd" >
+%PersVerse;
+]>
+
+<TEI.2>
+
+<teiHeader type="text" status="new">
+
+<fileDesc>
+
+<titleStmt>
+<title>Iliad (Greek). Machine readable text</title>
+<author>Homer</author>
+&responsibility;
+&fund.AnnCPB;
+</titleStmt>
+
+<extent>about 500Kb</extent>
+
+&Perseus.publish;
+<notesStmt><note anchored="yes">Basic SGML tagging by Lauren Burka and Chiara Thayer.</note></notesStmt>
+
+<sourceDesc>
+<biblStruct>
+  <monogr>
+    <author>Homer</author><title>Homeri Opera in five volumes.</title>
+  
+    <imprint><publisher>Oxford, Oxford University Press</publisher><date>1920</date></imprint>
+      <!-- Monro, Oxford, 1896 edition may be possible source text but unsure if this is the exact source -->
+  </monogr>
+</biblStruct>
+</sourceDesc>
+
+
+</fileDesc>
+
+<encodingDesc>
+
+<refsDecl doctype="TEI.2">
+<state delim="." unit="book"/>
+<state unit="card"/>
+</refsDecl>
+<refsDecl doctype="TEI.2">
+<state unit="book" delim="."/>
+<state unit="line"/>
+</refsDecl>
+</encodingDesc>
+
+<profileDesc>
+<langUsage>
+<language id="greek">Greek</language>
+<language id="en">English</language>
+</langUsage>
+</profileDesc>
+<revisionDesc>
+<change>
+<date>10/90</date><respStmt><name>Nancy Sultan</name><resp>(n/a)</resp></respStmt><item>Put in card breaks.</item>
+</change>
+<change>
+<date>8/91</date><respStmt><name>EM</name><resp>(n/a)</resp></respStmt><item>Revise DTDs and recheck texts.</item>
+</change>
+</revisionDesc>
+
+</teiHeader>
+<text><body>
+<div1 type="Book" n="1">
+<milestone ed="p" n="1" unit="card"/>
+<l><milestone ed="P" unit="para"/>mh=nin a)/eide qea\ *phlhi+a/dew *)axilh=os</l>
+<l>ou)lome/nhn, h(\ muri/' *)axaioi=s a)/lge' e)/qhke,</l>
+<l>polla\s d' i)fqi/mous yuxa\s *)/ai+di proi/+ayen</l>
+<l>h(rw/wn, au)tou\s de\ e(lw/ria teu=xe ku/nessin</l>
+<l n="5">oi)wnoi=si/ te pa=si, *dio\s d' e)telei/eto boulh/,</l>
+<l>e)c ou(= dh\ ta\ prw=ta diasth/thn e)ri/sante</l>
+<l>*)atrei/+dhs te a)/nac a)ndrw=n kai\ di=os *)axilleu/s.</l>
+<l><milestone ed="P" unit="Para"/>ti/s t' a)/r sfwe qew=n e)/ridi cune/hke ma/xesqai;</l>
+<l>*lhtou=s kai\ *dio\s ui(o/s: o(\ ga\r basilh=i+ xolwqei\s</l>
+<l n="10">nou=son a)na\ strato\n o)/rse kakh/n, o)le/konto de\ laoi/,</l>
+</div1></body></text>
+</TEI.2>
