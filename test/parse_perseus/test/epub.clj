@@ -74,7 +74,7 @@
         (write-epub (book)))
 (expect (interaction (spit (regexpath "OPS/cover.html") anything&))
         (write-epub (book)))
-(expect (interaction (spit (regexpath "META-INF\\container.xml") anything&))
+(expect (interaction (spit (regexpath "META-INF/container.xml") anything&))
         (write-epub (book)))
 (expect (interaction (spit #"mimetype" anything&))
         (write-epub (book)))
