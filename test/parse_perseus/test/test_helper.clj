@@ -28,7 +28,6 @@
     (string/replace name #"/" (re-qr File/separator))
     name))
 
-
 (defn regexpath
   [name]
   (re-pattern (re-qr (pathname name))))
