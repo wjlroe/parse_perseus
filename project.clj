@@ -5,7 +5,7 @@
                  [org.clojure/data.xml "0.0.7"]
                  [org.clojars.wjlroe/hiccup "1.0.5-SNAPSHOT"]
                  [environ "0.4.0"]
-                 [selmer "0.5.4"]]
+                 [selmer "0.5.9"]]
   :profiles {:dev {:dependencies [[expectations "1.4.56"]]}}
   :jvm-opts ["-Dfile.encoding=utf-8"]
   :main parse_perseus.book)
