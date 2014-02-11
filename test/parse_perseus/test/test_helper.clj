@@ -10,7 +10,7 @@
   ([overrides]
    ;; fixture filename location
    (merge
-     {:book-xml "simple.xml"
+     {:book-xml "resources/fixtures/simple.xml"
       :title "Odyssey"
       :identifier "the_odyssey"
       :ebooks-location "/tmp/perseus-tests"

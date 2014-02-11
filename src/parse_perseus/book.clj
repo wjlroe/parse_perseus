@@ -11,6 +11,8 @@
     [environ.core :as env]
     [clojure.stacktrace :as stack]
     [clojure.java.io :as io]
+    [clojure.zip :as zip]
+    [clojure.xml :as cxml]
     [parse_perseus.books :as books])
   (:import
     [java.io File BufferedWriter FileReader
@@ -23,6 +25,11 @@
 (def texts-dir (or (some-> (env/env :perseus-texts-dir) file)
                    (file home "Dropbox/perseus/texts")))
 (def print-debug-messages (some-> (env/env :debug) (= "true")))
+(def xml-options [:validating false
+                  :namespace-aware false
+                  :replacing-entity-references false
+                  :supporting-external-entities false
+                  :support-dtd false])
 
 (defn ebook-dir [{:keys [identifier]}]
   (file "/tmp/perseus-books" identifier))
@@ -66,9 +73,10 @@
         (parse-bc (first content))))))
 
 (defn parse-book-xml [{:keys [book-xml]}]
-  (with-open [rdr (io/reader book-xml)]
-    (for [node (xml/parse rdr)
-          :when (= :l (:tag node))]
+  (for [node (xml-seq (cxml/parse book-xml))
+        :when (= :l (:tag node))]
+    (do
+      (println node)
       (:content node))))
 
 (defn book-content [book lines chapter]
