@@ -4,4 +4,8 @@
         parse_perseus.test.test_helper)
   (:require [clojure.java.io :as io]))
 
-(expect seq? (parse-book-xml (book)))
+(expect map? (parse-book-xml (book)))
+
+;; Extract Books:
+;; {:chapters [{:content []}]}
+(expect :chapters (in (keys (parse-book-xml (book)))))

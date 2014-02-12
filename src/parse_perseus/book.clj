@@ -31,6 +31,18 @@
                   :supporting-external-entities false
                   :support-dtd false])
 
+(defn startparse-sax-non-validating
+  [s ch]
+  (..  (doto  (. javax.xml.parsers.SAXParserFactory  (newInstance))
+         (.setValidating false)
+         (.setFeature "http://apache.org/xml/features/nonvalidating/load-dtd-grammar" false)
+         (.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd" false)
+         (.setFeature "http://xml.org/sax/features/validation" false)
+         (.setFeature "http://xml.org/sax/features/external-general-entities" false)
+         (.setFeature "http://xml.org/sax/features/external-parameter-entities" false))
+      (newSAXParser)
+      (parse s ch)))
+
 (defn ebook-dir [{:keys [identifier]}]
   (file "/tmp/perseus-books" identifier))
 
@@ -73,11 +85,16 @@
         (parse-bc (first content))))))
 
 (defn parse-book-xml [{:keys [book-xml]}]
-  (for [node (xml-seq (cxml/parse book-xml))
-        :when (= :l (:tag node))]
-    (do
-      (println node)
-      (:content node))))
+  {:chapters
+   (for [book (xml-seq (cxml/parse book-xml startparse-sax-non-validating))
+         :when (= :div1 (:tag book))]
+     ; book
+     {:content (for [line (:content book)
+                     :when (= :l (:tag line))]
+                 (if (= :milestone (:tag (first line)))
+                   (parse-bc (second line))
+                   (parse-bc (first line))))}
+     )})
 
 (defn book-content [book lines chapter]
   (page/xhtml
