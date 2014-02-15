@@ -33,13 +33,13 @@
 
 (defn startparse-sax-non-validating
   [s ch]
-  (..  (doto  (. javax.xml.parsers.SAXParserFactory  (newInstance))
-         (.setValidating false)
-         (.setFeature "http://apache.org/xml/features/nonvalidating/load-dtd-grammar" false)
-         (.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd" false)
-         (.setFeature "http://xml.org/sax/features/validation" false)
-         (.setFeature "http://xml.org/sax/features/external-general-entities" false)
-         (.setFeature "http://xml.org/sax/features/external-parameter-entities" false))
+  (.. (doto (. javax.xml.parsers.SAXParserFactory (newInstance))
+        (.setValidating false)
+        (.setFeature "http://apache.org/xml/features/nonvalidating/load-dtd-grammar" false)
+        (.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd" false)
+        (.setFeature "http://xml.org/sax/features/validation" false)
+        (.setFeature "http://xml.org/sax/features/external-general-entities" false)
+        (.setFeature "http://xml.org/sax/features/external-parameter-entities" false))
       (newSAXParser)
       (parse s ch)))
 
