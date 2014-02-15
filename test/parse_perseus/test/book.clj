@@ -8,15 +8,27 @@
 
 ;; Extract Books:
 ;; {:chapters [{:content []}]}
-(expect :chapters (in (keys (parse-book-xml (book)))))
+(expect :chapters (in (-> (book)
+                          parse-book-xml
+                          keys)))
 
 ;; chapters contain content
-(expect :content (in (keys (first (:chapters (parse-book-xml (book)))))))
+(expect :content (in (-> (book)
+                         parse-book-xml
+                         :chapters
+                         first
+                         keys)))
 
 ;; chapters transformated to chapter-files
-(expect :chapter-files (in (keys (chapter-files (parse-book-xml (book))))))
+(expect :chapter-files (in (-> (book)
+                               parse-book-xml
+                               chapter-files
+                               keys)))
 
 ;; chapter-files contain ids and filenames
-(given [key result] (expect key (in (keys (first (:chapter-files (chapter-files result))))))
-       :id (parse-book-xml (book))
-       :filename (parse-book-xml (book)))
+(given [key result] (expect key (in (-> result
+                                        :chapter-files
+                                        first
+                                        keys)))
+       :id (chapter-files (parse-book-xml (book)))
+       :filename (chapter-files (parse-book-xml (book))))
