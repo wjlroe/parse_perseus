@@ -94,6 +94,17 @@
                    (parse-bc (second line))
                    (parse-bc (first line))))})})
 
+(defn chapter-files
+  [{:keys [chapters] :as book}]
+  (assoc book
+         :chapter-files
+         (map-indexed (fn [index chapter]
+                        (let [chapter-name (str "chapter" (inc index))]
+                          (assoc chapter
+                                 :id chapter-name
+                                 :filename (str chapter-name ".html"))))
+                      chapters)))
+
 (defn book-content [book lines chapter]
   (page/xhtml
     {:doctype "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n" :lang "grc"}
