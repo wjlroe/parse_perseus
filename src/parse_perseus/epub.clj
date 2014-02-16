@@ -4,7 +4,9 @@
   (:require
     [clojure.string :as string]
     [selmer.filters :as filters]
-    [selmer.parser :as selmer]))
+    [selmer.parser :as selmer])
+  (:import
+    [java.util.zip ZipOutputStream ZipEntry]))
 
 (defn author-file-as
   [author-name]
