@@ -64,9 +64,8 @@
 
 (defn ebook-location
   [{:keys [ebooks-location identifier] :as book}]
-  ;;{:pre [(string? ebooks-location)
-   ;;      (string? identifier)]}
-  (println "ebooks-location: " ebooks-location "identifier: " identifier)
+  {:pre [(string? ebooks-location)
+         (string? identifier)]}
   (assoc book :ebook-location (file ebooks-location identifier)))
 
 (defn write-epub

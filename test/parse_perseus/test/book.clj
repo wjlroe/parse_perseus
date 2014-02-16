@@ -2,7 +2,9 @@
   (:use [parse_perseus.book] :reload)
   (:use expectations
         parse_perseus.test.test_helper)
-  (:require [clojure.java.io :as io]))
+  (:require
+    [clojure.java.io :as io]
+    [parse_perseus.books :as books]))
 
 (expect map? (parse-book-xml (book)))
 
@@ -32,3 +34,8 @@
                                         keys)))
        :id (chapter-files (parse-book-xml (book)))
        :filename (chapter-files (parse-book-xml (book))))
+
+(expect (interaction (spit (regexpath "OPS/chapter1.html") anything&))
+        (generate-book1 (:test-simple books/books)))
+(expect (interaction (spit #"mimetype" anything&))
+        (generate-book1 (:test-simple books/books)))

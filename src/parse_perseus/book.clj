@@ -365,8 +365,8 @@
   x)
 
 (defn generate-book1
-  [book-obj]
-  (-> book-obj
+  [book]
+  (-> book
       parse-book-xml
       (tap-value "after parse-book-xml:")
       chapter-files
