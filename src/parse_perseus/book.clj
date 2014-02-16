@@ -13,7 +13,8 @@
     [clojure.java.io :as io]
     [clojure.zip :as zip]
     [clojure.xml :as cxml]
-    [parse_perseus.books :as books])
+    [parse_perseus.books :as books]
+    [parse_perseus.epub :as epub])
   (:import
     [java.io File BufferedWriter FileWriter
      FileOutputStream FileNotFoundException]
@@ -43,22 +44,28 @@
       (newSAXParser)
       (parse s ch)))
 
-(defn ebook-dir [{:keys [identifier]}]
+(defn ebook-dir
+  [{:keys [identifier]}]
   (file "/tmp/perseus-books" identifier))
 
-(defn ebook-filename [{:keys [identifier]}]
+(defn ebook-filename
+  [{:keys [identifier]}]
   (file "/tmp/perseus-books" (str identifier ".epub")))
 
-(defn book-xml [{:keys [book-xml]}]
+(defn book-xml
+  [{:keys [book-xml]}]
   (file texts-dir book-xml))
 
-(defn cover-image-file [{:keys [cover-image]}]
+(defn cover-image-file
+  [{:keys [cover-image]}]
   (file covers-dir cover-image))
 
-(defn cover-image? [book]
+(defn cover-image?
+  [book]
   (.exists (cover-image-file book)))
 
-(defn debug [& stuffs]
+(defn debug
+  [& stuffs]
   (when print-debug-messages
     (apply println stuffs)))
 
@@ -70,12 +77,14 @@
 (def ncx-doctype
   "<!DOCTYPE ncx PUBLIC \"-//NISO//DTD ncx 2005-1//EN\" \"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd\">\n")
 
-(defn write-file [to-file data]
+(defn write-file
+  [to-file data]
   (make-parents to-file)
   (with-open [wtr (BufferedWriter. (FileWriter. to-file))]
     (.write wtr data)))
 
-(defn content-file [book-node]
+(defn content-file
+  [book-node]
   (for [x (:content book-node)
         :when (= :l (:tag x))
         :let [content (:content x)]]
@@ -83,16 +92,18 @@
       (str "</p>\n<p>" (parse-bc (second content)))
       (parse-bc (first content)))))
 
-(defn parse-book-xml [{:keys [book-xml]}]
-  {:chapters
-   (for [book (xml-seq (cxml/parse book-xml startparse-sax-non-validating))
-         :when (= :div1 (:tag book))]
-     ; book
-     {:content (for [line (:content book)
-                     :when (= :l (:tag line))]
-                 (if (= :milestone (:tag (first line)))
-                   (parse-bc (second line))
-                   (parse-bc (first line))))})})
+(defn parse-book-xml
+  [{:keys [book-xml] :as book}]
+  (assoc book
+         :chapters
+         (for [book (xml-seq (cxml/parse book-xml startparse-sax-non-validating))
+               :when (= :div1 (:tag book))]
+           ; book
+           {:content (for [line (:content book)
+                           :when (= :l (:tag line))]
+                       (if (= :milestone (:tag (first line)))
+                         (parse-bc (second line))
+                         (parse-bc (first line))))})))
 
 (defn chapter-files
   [{:keys [chapters] :as book}]
@@ -105,7 +116,8 @@
                                  :filename (str chapter-name ".html"))))
                       chapters)))
 
-(defn book-content [book lines chapter]
+(defn book-content
+  [book lines chapter]
   (page/xhtml
     {:doctype "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n" :lang "grc"}
     [:head
@@ -120,14 +132,16 @@
      [:p
       (for [line lines] (cons line (cons [:br] "\n")))]]))
 
-(defn chapter-generating-element [element]
+(defn chapter-generating-element
+  [element]
   (or
     ; a div1 with type="Book"
     (and (= :div1 (:tag element)) (= "Book" (:type (:attrs element))))
     ; a text element with an n attribute
     (and (= :text (:tag element)) (contains? (:attrs element) :n))))
 
-(defn bc-content-from-file [book]
+(defn bc-content-from-file
+  [book]
   (assoc book
          :chapter-files
          (for [node (xml-seq (parse (book-xml book)))
@@ -144,7 +158,8 @@
                          (book-content book (content-file node) chapter))
              chapter))))
 
-(defn book-opf [book]
+(defn book-opf
+  [book]
   (xml/emit-str
     (xml/sexp-as-element
       [:package {:version "2.0"
@@ -196,7 +211,8 @@
                        :type "text"
                        :title "Text"}])]])))
 
-(defn cover-page [book]
+(defn cover-page
+  [book]
   (page/xhtml
     {:doctype "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"}
     [:head
@@ -207,7 +223,8 @@
        [:div {:id "cover-image"}
         [:img {:src "cover.jpg" :alt "Cover image"}]])]))
 
-(defn table-of-contents [book]
+(defn table-of-contents
+  [book]
   (page/xhtml
     {:doctype "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"}
     [:head
@@ -222,7 +239,8 @@
           [:a {:href (:filename chapter)}
            (str "Book " (:playorder chapter))]])]]]))
 
-(defn book-ncx [book]
+(defn book-ncx
+  [book]
   (hiccup/html
     {:mode :xml}
     (page/xml-declaration "UTF-8")
@@ -248,7 +266,8 @@
          [:navLabel [:text (str "Book " (:playorder chapter))]]
          [:content {:src (:filename chapter)}]])]]))
 
-(defn container [book]
+(defn container
+  [book]
   (xml/emit-str
     (xml/sexp-as-element
       [:container {:version "1.0"
@@ -257,11 +276,13 @@
         [:rootfile {:full-path "OPS/book.opf"
                     :media-type "application/oebps-package+xml"}]]])))
 
-(defn mimetype [book]
+(defn mimetype
+  [book]
   "application/epub+zip
   ")
 
-(defn stylesheet [book]
+(defn stylesheet
+  [book]
   "p
   {
   text-indent:            0em;
@@ -278,18 +299,22 @@
    "OPS/toc.html" table-of-contents
    "META-INF/container.xml" container})
 
-(defn write-book-opf [to-file book]
+(defn write-book-opf
+  [to-file book]
   (write-file to-file (book-opf book)))
 
-(defn write-book-cover-page [to-file book]
+(defn write-book-cover-page
+  [to-file book]
   (write-file to-file (cover-page book)))
 
-(defn copy-cover-image [book]
+(defn copy-cover-image
+  [book]
   (copy
     (file (file covers-dir (:cover-image book)))
     (file (ebook-dir book) "OPS/cover.jpg")))
 
-(defn create-epub [book]
+(defn create-epub
+  [book]
   (let [files (concat (keys epub-files)
                       (map #(str "OPS/" (:filename %))
                            (:chapter-files book)))
@@ -311,14 +336,16 @@
         (debug "EBook file generated: "
                (.getPath (ebook-filename book)))))))
 
-(defn write-all-files [book]
+(defn write-all-files
+  [book]
   (doseq [thefilename (keys epub-files)
           :let [contents-fun (epub-files thefilename)]]
     (debug "About to write-file: " thefilename)
     (write-file (file (ebook-dir book) thefilename)
                 (contents-fun book))))
 
-(defn generate-book [book]
+(defn generate-book
+  [book]
   (try
     (delete-file-recursively (ebook-dir book) true)
     (let [new-book (bc-content-from-file book)]
@@ -330,13 +357,28 @@
       (stack/print-stack-trace e)
       (println "File not found: " (.getMessage e)))
     (finally
-      (println "Done.")) ))
+      (println "Done."))))
+
+(defn tap-value
+  [x msg]
+  (println msg x)
+  x)
+
+(defn generate-book1
+  [book-obj]
+  (-> book-obj
+      parse-book-xml
+      (tap-value "after parse-book-xml:")
+      chapter-files
+      (tap-value "after chapter-files:")
+      epub/write-epub))
 
 ;; TODO: Command line arguments - title, xml source, cover image
-(defn -main [& args]
+(defn -main
+  [& args]
   (let [book-to-generate (some-> (first args) keyword)
         book (or (get books/books book-to-generate) :all)]
     (if (= book :all)
       (doseq [[name book] books/books]
         (generate-book book))
-      (generate-book book))))
+      (generate-book1 book))))

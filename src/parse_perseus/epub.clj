@@ -26,8 +26,7 @@
 (def ops-chapter    (partial selmer/render-file "ebook/OPS/chapter.html"))
 
 (defn mimetype [&args]
-  "application/epub+zip
-  ")
+  (println-str "application/epub+zip"))
 
 (def epub-files
   {"mimetype" mimetype
@@ -63,6 +62,9 @@
 
 (defn ebook-location
   [{:keys [ebooks-location identifier] :as book}]
+  ;;{:pre [(string? ebooks-location)
+   ;;      (string? identifier)]}
+  (println "ebooks-location: " ebooks-location "identifier: " identifier)
   (assoc book :ebook-location (file ebooks-location identifier)))
 
 (defn write-epub

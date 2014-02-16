@@ -16,4 +16,10 @@
     :ident-url "http://www.perseus.tufts.edu/hopper/search?doc=Perseus%3atext%3a1999.01.0209"
     :author "Xenophon"
     :cover-image "minor_works.jpg"
-    :book-xml "Classics/Xenophon/opensource/xen.opuscula_gk.xml"}})
+    :book-xml "Classics/Xenophon/opensource/xen.opuscula_gk.xml"}
+   :test-simple
+   {:title "Test Simple"
+    :identifier "the_odyssey_sample"
+    :ebooks-location "/tmp/perseus-ebooks"
+    :author "Homer"
+    :book-xml "resources/fixtures/simple.xml"}})
