@@ -98,7 +98,6 @@
          :chapters
          (for [book (xml-seq (cxml/parse book-xml startparse-sax-non-validating))
                :when (= :div1 (:tag book))]
-           ; book
            {:content (for [line (:content book)
                            :when (= :l (:tag line))]
                        (if (= :milestone (:tag (first line)))
