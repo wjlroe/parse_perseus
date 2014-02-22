@@ -8,5 +8,5 @@
                  [selmer "0.5.9"]]
   :profiles {:dev {:dependencies [[expectations "1.4.56"]]}}
   :plugins [[lein-expectations "0.0.8"]]
-  :jvm-opts ["-Dfile.encoding=utf-8"]
+  :jvm-opts ["-Dfile.encoding=utf-8" "-Xms128m"]
   :main parse_perseus.book)
