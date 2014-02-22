@@ -31,6 +31,7 @@
                   :replacing-entity-references false
                   :supporting-external-entities false
                   :support-dtd false])
+(def debug? (atom false))
 
 (defn startparse-sax-non-validating
   [s ch]
@@ -360,7 +361,8 @@
 
 (defn tap-value
   [x msg]
-  (println msg x)
+  (when @debug?
+    (println msg x))
   x)
 
 (defn generate-book1
@@ -376,8 +378,9 @@
 (defn -main
   [& args]
   (let [book-to-generate (some-> (first args) keyword)
-        book (or (get books/books book-to-generate) :all)]
+        book (or (get books/books book-to-generate) :all)
+        set-debug (when (second args) (swap! debug? true))]
     (if (= book :all)
       (doseq [[name book] books/books]
-        (generate-book book))
+        (generate-book1 book))
       (generate-book1 book))))
