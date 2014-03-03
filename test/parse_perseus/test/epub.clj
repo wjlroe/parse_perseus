@@ -1,7 +1,15 @@
 (ns parse_perseus.test.epub
-  (:use [parse_perseus.epub] :reload)
-  (:use expectations
-        parse_perseus.test.test_helper))
+  (:use
+    [parse_perseus.epub] :reload)
+  (:use
+    expectations
+    erajure.core
+    parse_perseus.test.test_helper)
+  (:require
+    [clojure.java.io :as io])
+  (:import
+    [java.io File FileOutputStream]
+    [java.util.zip ZipOutputStream ZipEntry]))
 
 ;; author-file-as
 (expect "Austen, Jane"
@@ -65,20 +73,39 @@
 
 ;; write-epub
 (expect (interaction (spit (regexpath "OPS/book.opf") anything&))
-        (write-epub (book)))
+        (context [:with-redefs [create-epub identity]]
+                 (write-epub (book))))
 (expect (interaction (spit (regexpath "OPS/book.ncx") anything&))
-        (write-epub (book)))
+        (context [:with-redefs [create-epub identity]]
+                 (write-epub (book))))
 (expect (interaction (spit (regexpath "OPS/toc.html") anything&))
-        (write-epub (book)))
+        (context [:with-redefs [create-epub identity]]
+                 (write-epub (book))))
 (expect (interaction (spit (regexpath "OPS/style.css") anything&))
-        (write-epub (book)))
+        (context [:with-redefs [create-epub identity]]
+                 (write-epub (book))))
 (expect (interaction (spit (regexpath "OPS/cover.html") anything&))
-        (write-epub (book)))
+        (context [:with-redefs [create-epub identity]]
+                 (write-epub (book))))
 (expect (interaction (spit (regexpath "META-INF/container.xml") anything&))
-        (write-epub (book)))
+        (context [:with-redefs [create-epub identity]]
+                 (write-epub (book))))
 (expect (interaction (spit #"mimetype" anything&))
-        (write-epub (book)))
+        (context [:with-redefs [create-epub identity]]
+                 (write-epub (book))))
 (expect (interaction (spit (regexpath "OPS/chapter1.html") anything&))
-        (write-epub (book {:chapter-files [{:filename "chapter1.html"}]})))
-(expect (interaction (clojure.java.io/copy #"cover-image.jpg" anything&))
-        (write-epub (book {:cover-image "cover-image.jpg"})))
+        (context [:with-redefs [create-epub identity]]
+                 (write-epub (book {:chapter-files [{:filename "chapter1.html"}]}))))
+(expect (interaction (io/copy #"cover-image.jpg" anything&))
+        (context [:with-redefs [create-epub identity]]
+                 (write-epub (book {:cover-image "cover-image.jpg"}))))
+
+;; Ensure the mimetype is stored without compression
+(expect-let [ze (mock ZipEntry)
+             output (mock ZipOutputStream (behavior (.putNextEntry ze)))
+             input-file (mock File (behavior (.exists) true))]
+            (interaction (.setMethod ze ZipEntry/STORED))
+            (with-redefs [zip-entry (constantly ze)
+                          io/copy no-op]
+              (add-file-to-zip output "mimetype" input-file)))
+

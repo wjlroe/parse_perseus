@@ -1,10 +1,17 @@
 (ns parse_perseus.test.book
-  (:use [parse_perseus.book] :reload)
-  (:use expectations
-        parse_perseus.test.test_helper)
+  (:use
+    [parse_perseus.book] :reload)
+  (:use
+    expectations
+    parse_perseus.test.test_helper)
   (:require
-    [clojure.java.io :as io]
     [parse_perseus.books :as books]))
+
+(defn in-context
+  {:expectations-options :in-context}
+  [work]
+  (with-redefs [parse_perseus.epub/create-epub identity]
+    (work)))
 
 (expect map? (parse-book-xml (book)))
 

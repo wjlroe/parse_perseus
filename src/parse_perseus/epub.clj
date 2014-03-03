@@ -6,7 +6,12 @@
     [selmer.filters :as filters]
     [selmer.parser :as selmer])
   (:import
+    [java.io FileOutputStream]
     [java.util.zip ZipOutputStream ZipEntry]))
+
+(defn default-fields
+  [book]
+  (assoc book :files []))
 
 (defn author-file-as
   [author-name]
@@ -40,12 +45,12 @@
    "META-INF/container.xml" meta-container})
 
 (defn create-epub-files
-  [{:keys [ebook-location] :as book}]
+  [{:keys [ebook-location files] :as book}]
   (doseq [[filename content-fun] epub-files
           :let [filename (str (file ebook-location filename))]]
     (make-parents filename)
     (spit filename (content-fun book)))
-  book)
+  (assoc book :files (into files (keys epub-files))))
 
 (defn create-chapter-files
   [{:keys [ebook-location chapter-files] :as book}]
@@ -66,12 +71,37 @@
   [{:keys [ebooks-location identifier] :as book}]
   {:pre [(string? ebooks-location)
          (string? identifier)]}
-  (assoc book :ebook-location (file ebooks-location identifier)))
+  (assoc book
+         :ebook-location (file ebooks-location identifier)
+         :ebook-filename (file ebooks-location (str identifier ".epub"))))
+
+(defn zip-entry
+  [filename]
+  (ZipEntry. filename))
+
+(defn add-file-to-zip
+  [output ebook-file input-file]
+  (let [entry (zip-entry ebook-file)]
+    (when (.exists input-file)
+      (when (= "mimetype" ebook-file)
+        (.setMethod entry ZipEntry/STORED))
+      (.putNextEntry output entry)
+      (copy input-file output))))
+
+(defn create-epub
+  [{:keys [files ebook-filename ebook-location]}]
+  (with-open [out (-> (FileOutputStream. ebook-filename)
+                      (ZipOutputStream.))]
+    (doseq [ebook-file files
+            :let [input-file (file ebook-location ebook-file)]]
+      (add-file-to-zip out ebook-file input-file))))
 
 (defn write-epub
   [book]
   (-> book
+      default-fields
       ebook-location
       cover-image
       create-epub-files
-      create-chapter-files))
+      create-chapter-files
+      create-epub))
