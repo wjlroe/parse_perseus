@@ -19,11 +19,14 @@
 
 ;; OPS/book.ncx
 (expect #"Super awesome funtime"
-        (ops-book-ncx (book {:title "Super awesome funtime"})))
+        (ops-book-ncx
+          (book {:title "Super awesome funtime"})))
 (expect #"chapter1.html"
-        (ops-book-ncx (book {:chapter-files [{:filename "chapter1.html"}]})))
+        (ops-book-ncx
+          (book {:chapter-files [{:filename "chapter1.html"}]})))
 (expect #"Chapter 1"
-        (ops-book-ncx (book {:chapter-files [{:title "Chapter 1"}]})))
+        (ops-book-ncx
+          (book {:chapter-files [{:title "Chapter 1"}]})))
 
 ;; OPS/book.opf
 (expect #"unique-identifier=\"my_book_id\""
@@ -47,14 +50,17 @@
         (re-find #"<item id=\"cover-image\""
                  (ops-book-opf (dissoc (book {}) :cover-image))))
 (expect #"<itemref idref=\"chapter2\" />"
-        (ops-book-opf (book {:chapter-files [{:id "chapter1"} {:id "chapter2"}]})))
+        (ops-book-opf
+          (book {:chapter-files [{:id "chapter1"} {:id "chapter2"}]})))
 (expect #"<reference href=\"chapter1.html\" type=\"text\" title=\"Text\" />"
-        (ops-book-opf (book {:chapter-files [{:filename "chapter1.html"}]})))
+        (ops-book-opf
+          (book {:chapter-files [{:filename "chapter1.html"}]})))
 
 ;; OPS/toc.html
 (expect #"<a href=\"chapter1.html\">Chapter 1</a>"
-        (ops-toc (book {:chapter-files [{:filename "chapter1.html"
-                                         :title "Chapter 1"}]})))
+        (ops-toc
+          (book {:chapter-files [{:filename "chapter1.html"
+                                  :title "Chapter 1"}]})))
 
 ;; OPS/cover.html
 (expect #"<img src=\"the-cover.jpg\" alt=\"Cover image\" />"
@@ -65,11 +71,14 @@
 
 ;; OPS/chapter.html
 (expect #"Super happy fun times"
-        (ops-chapter (book {:chapter {:contents "Wow. Super happy fun times."}})))
+        (ops-chapter
+          (book {:chapter {:contents "Wow. Super happy fun times."}})))
 (expect #"Chapter 1"
-        (ops-chapter (book {:chapter {:title "Chapter 1"}})))
+        (ops-chapter
+          (book {:chapter {:title "Chapter 1"}})))
 (expect #"Book Title"
-        (ops-chapter (book {:title "Book Title"})))
+        (ops-chapter
+          (book {:title "Book Title"})))
 
 ;; write-epub
 (expect (interaction (spit (regexpath "OPS/book.opf") anything&))
