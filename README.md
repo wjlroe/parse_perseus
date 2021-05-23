@@ -1,7 +1,5 @@
 # parse_perseus
 
-[![Build Status](https://secure.travis-ci.org/wjlroe/parse_perseus.png)](http://travis-ci.org/wjlroe/parse_perseus)
-
 Perseus is a digital library of Ancient Greek and Roman texts. This project is for converting the XML files, freely available from their website, into Unicode ebooks for e-readers such as the Amazon Kindle.
 
 See [Parsing and ebook making](http://wjlroe.github.com/2011/04/25/parsing-and-ebook-making.html) which is a blog entry I wrote about this project.
